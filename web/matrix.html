@@ -3,6 +3,7 @@
 <head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js">
     </script>
+    <script src="https://rawgit.com/jmesnil/stomp-websocket/master/lib/stomp.js"></script>
     <meta charset="utf-8">
     <title>Twitter matrix</title>
 </head>
@@ -104,15 +105,6 @@
             Game_Interval = setInterval(draw, 33);
         }
 
-        setInterval(submitMessage, 33);
-        function submitMessage() {
-            console.log(tweets.size);
-            for (h = 0; h < 5; h++) {
-                var row = Math.floor(Math.random() * rollers.length);
-                rollers[row].tweetQueue.push(Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5));
-            }
-        }
-
         q.addEventListener('click', function (e) {
             var clickedX = e.pageX - this.offsetLeft;
             var clickedY = e.pageY - this.offsetTop;
@@ -155,6 +147,19 @@
 
             document.body.removeChild(textArea);
         }
+
+        url = "ws://localhost:61614/stomp";
+        client = Stomp.client(url);
+
+        client.connect({}, function() {
+            client.subscribe("/topic/twitter.tweet",
+                    function( message ) {
+                        var row = Math.floor(Math.random() * rollers.length);
+                        rollers[row].tweetQueue.push(message.body);
+                    },
+                    { priority: 9 }
+            );
+        });
     })
 </script>
 </body>

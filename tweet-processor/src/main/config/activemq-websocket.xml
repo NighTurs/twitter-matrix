@@ -28,7 +28,8 @@
                             <authorizationEntry topic=">" read="admins" write="admins" admin="admins"/>
                             <authorizationEntry topic="twitter.tweet" read="users,anonymous" write="users"
                                                 admin="users"/>
-                            <authorizationEntry topic="ActiveMQ.Advisory.>" read="guests,users" write="guests,users"
+                            <authorizationEntry topic="ActiveMQ.Advisory.>" read="guests,users"
+                                                write="guests,users"
                                                 admin="guests,users"/>
                         </authorizationEntries>
                         <tempDestinationAuthorizationEntry>
