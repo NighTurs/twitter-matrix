@@ -7,13 +7,15 @@ import org.apache.activemq.command.ActiveMQTopic;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 
-class LocalActiveMQJmsProvider implements JmsProvider {
+class TweetJmsProvider implements JmsProvider {
     private ConnectionFactory connectionFactory;
     private Destination destination;
 
-    public LocalActiveMQJmsProvider(String destination) {
-        this.connectionFactory = new ActiveMQConnectionFactory("vm://localhost?broker.persistent=false");
-        this.destination = new ActiveMQTopic(destination);
+    public TweetJmsProvider(ActiveMqConfig config) {
+        this.connectionFactory = new ActiveMQConnectionFactory(config.activeMqUsername(),
+                config.activeMqPassword(),
+                config.activeMqUrl());
+        this.destination = new ActiveMQTopic(config.activeMqTwitterTweetTopic());
     }
 
     @Override
