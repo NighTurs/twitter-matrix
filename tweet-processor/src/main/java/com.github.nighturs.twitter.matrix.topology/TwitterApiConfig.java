@@ -17,4 +17,10 @@ public interface TwitterApiConfig extends Config {
 
     @Key("twitter.api.token.secret")
     String twitterApiTokenSecret();
+
+    @Key("twitter.api.parameters.track")
+    String twitterApiParametersTrack();
+
+    @Key("twitter.api.parameters.language")
+    String twitterApiParametersLanguage();
 }

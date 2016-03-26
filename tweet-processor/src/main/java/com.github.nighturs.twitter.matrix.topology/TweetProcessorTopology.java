@@ -32,6 +32,8 @@ public final class TweetProcessorTopology {
         config.put(TwitterPublicStreamSpout.API_CONSUMER_SECRET_PROP, apiConfig.twitterApiConsumerSecret());
         config.put(TwitterPublicStreamSpout.API_TOKEN_PROP, apiConfig.twitterApiToken());
         config.put(TwitterPublicStreamSpout.API_TOKEN_SECRET_PROP, apiConfig.twitterApiTokenSecret());
+        config.put(TwitterPublicStreamSpout.API_PARAMETERS_TRACK, apiConfig.twitterApiParametersTrack());
+        config.put(TwitterPublicStreamSpout.API_PARAMETERS_LANGUAGE, apiConfig.twitterApiParametersLanguage());
 
         new LocalCluster().submitTopology(TWEET_PROCESSOR, config, builder.createTopology());
     }
