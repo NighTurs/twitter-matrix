@@ -1,2 +1,2 @@
 rootProject.name = 'twitter-matrix'
-include 'tweet-processor'
+include 'tweet-processor', 'web'

@@ -1,0 +1,17 @@
+apply plugin: 'java'
+apply plugin: 'war'
+apply plugin: 'jetty'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'javax.servlet', name: 'servlet-api', version: '2.5'
+}
+
+httpPort = 8080
+stopPort = 9080
+stopKey = "stopKey"
