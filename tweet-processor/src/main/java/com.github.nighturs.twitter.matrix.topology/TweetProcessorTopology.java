@@ -7,7 +7,7 @@ import backtype.storm.contrib.jms.bolt.JmsBolt;
 import backtype.storm.topology.TopologyBuilder;
 import org.aeonbits.owner.ConfigFactory;
 
-public final class TweetProcessorTopology {
+final class TweetProcessorTopology {
     private static final String TWITTER_PUBLIC_STREAM_SPOUT = "TWITTER_PUBLIC_STREAM_SPOUT";
     private static final String JMS_TWEET_TOPIC_BOLT = "JMS_TWEET_TOPIC_BOLT";
     private static final String TWEET_PROCESSOR = "TWEET_PROCESSOR";

@@ -4,7 +4,7 @@ import org.aeonbits.owner.Config;
 import org.aeonbits.owner.Config.Sources;
 
 @Sources("classpath:twitterApiConfig.properties")
-public interface TwitterApiConfig extends Config {
+interface TwitterApiConfig extends Config {
 
     @Key("twitter.api.consumer.key")
     String twitterApiConsumerKey();

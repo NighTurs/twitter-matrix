@@ -4,7 +4,7 @@ import org.aeonbits.owner.Config;
 import org.aeonbits.owner.Config.Sources;
 
 @Sources("classpath:activeMqConfig.properties")
-public interface ActiveMqConfig extends Config {
+interface ActiveMqConfig extends Config {
 
     @Key("activemq.url")
     String activeMqUrl();

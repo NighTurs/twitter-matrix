@@ -8,10 +8,10 @@ import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 
 class TweetJmsProvider implements JmsProvider {
-    private ConnectionFactory connectionFactory;
-    private Destination destination;
+    private final ConnectionFactory connectionFactory;
+    private final Destination destination;
 
-    public TweetJmsProvider(ActiveMqConfig config) {
+    TweetJmsProvider(ActiveMqConfig config) {
         this.connectionFactory = new ActiveMQConnectionFactory(config.activeMqUsername(),
                 config.activeMqPassword(),
                 config.activeMqUrl());

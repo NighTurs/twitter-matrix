@@ -26,22 +26,20 @@ import twitter4j.StatusListener;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class TwitterPublicStreamSpout extends BaseRichSpout {
+class TwitterPublicStreamSpout extends BaseRichSpout {
 
     private static final Logger logger = LoggerFactory.getLogger(TwitterPublicStreamSpout.class);
 
-    public static final String API_CONSUMER_KEY_PROP = "twitter.api.consumer.key.prop";
-    public static final String API_CONSUMER_SECRET_PROP = "twitter.api.consumer.secret.prop";
-    public static final String API_TOKEN_PROP = "twitter.api.token.prop";
-    public static final String API_TOKEN_SECRET_PROP = "twitter.api.token.secret.prop";
-    public static final String API_PARAMETERS_TRACK = "twitter.api.parameters.track";
-    public static final String API_PARAMETERS_LANGUAGE = "twitter.api.parameters.language";
-    public static final Random random = new Random();
+    static final String API_CONSUMER_KEY_PROP = "twitter.api.consumer.key.prop";
+    static final String API_CONSUMER_SECRET_PROP = "twitter.api.consumer.secret.prop";
+    static final String API_TOKEN_PROP = "twitter.api.token.prop";
+    static final String API_TOKEN_SECRET_PROP = "twitter.api.token.secret.prop";
+    static final String API_PARAMETERS_TRACK = "twitter.api.parameters.track";
+    static final String API_PARAMETERS_LANGUAGE = "twitter.api.parameters.language";
     private static final int MSG_QUEUE_CAPACITY = 100000;
     private String apiConsumerKey;
     private String apiConsumerSecret;
@@ -67,7 +65,7 @@ public class TwitterPublicStreamSpout extends BaseRichSpout {
         apiParametersLanguage = (String) conf.get(API_PARAMETERS_LANGUAGE);
         this.spoutOutputCollector = collector;
         this.statusQueue = new LinkedBlockingQueue<>();
-//        setupApiClient();
+        setupApiClient();
     }
 
     private void setupApiClient() {
