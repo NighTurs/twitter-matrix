@@ -4,12 +4,12 @@ $(document).ready(function () {
     var BCOLOR = '#000';
     var NEW_CHAR_COLOR = '#0F0';
     var FONT = '10pt Georgia';
-    var WIDTH = q.width = window.innerWidth;
-    var HEIGHT = q.height = window.innerHeight;
+    var WIDTH = canv.width = canvover.width = window.innerWidth;
+    var HEIGHT = canv.height = canvover.height = window.innerHeight;
     var GRIDN = Math.floor((HEIGHT - CELL_HEIGHT) / CELL_HEIGHT);
     var GRIDM = Math.floor((WIDTH - CELL_WIDTH) / CELL_WIDTH) + 1;
 
-    // Container of matrix cells with references to currently displayed tweet
+    // Container of matrix cells with references to currently displayed tweets
     var grid = [];
     for (i = CELL_HEIGHT; i <= HEIGHT - CELL_HEIGHT; i += CELL_HEIGHT) {
         var row = [];
@@ -17,8 +17,7 @@ $(document).ready(function () {
             row.push({
                 x: h,
                 y: i,
-                tweetKey: null,
-                tweetOffset: null
+                tweetKey: null
             })
         }
         grid.push(row);
@@ -26,6 +25,9 @@ $(document).ready(function () {
 
     // Currently displayed tweets container
     var tweets = new Map();
+
+    // Tweet key that is currently hovered over
+    var hoverTweetKey = null;
 
     var rollers = [];
     for (i = 0; i < GRIDN; i++) {
@@ -36,7 +38,8 @@ $(document).ready(function () {
         })
     }
 
-    var ctx = q.getContext('2d');
+    var ctxover = canvover.getContext('2d');
+    var ctx = canv.getContext('2d');
     // black screen
     ctx.fillStyle = BCOLOR;
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
@@ -51,30 +54,40 @@ $(document).ready(function () {
             roller = rollers[i];
             if (roller.tweetQueue.length > 0) {
                 var cell = grid[i][roller.cellInd];
-                var topMsg = roller.tweetQueue[0];
+                var topTweet = roller.tweetQueue[0];
+                var topTweetText = topTweet.tweetText;
+                var topTweetKey = topTweet.tweetUrl;
                 ctx.fillStyle = BCOLOR;
                 ctx.fillRect(cell.x, cell.y - CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT);
                 ctx.fillStyle = NEW_CHAR_COLOR;
-                ctx.fillText(topMsg[roller.curTweetPos], cell.x, cell.y);
+                ctx.fillText(topTweetText[roller.curTweetPos], cell.x, cell.y);
 
                 if (cell.tweetKey) {
-                    value = tweets.get(cell.tweetKey);
-                    if (value <= 1) {
+                    tweetInfo = tweets.get(cell.tweetKey);
+                    if (tweetInfo.count <= 1) {
                         tweets.delete(cell.tweetKey);
                     } else {
-                        tweets.set(cell.tweetKey, value - 1);
+                        tweetInfo.count--;
                     }
                 }
-                cell.tweetKey = topMsg;
-                cell.tweetOffset = roller.curTweetPos;
-                if (tweets.has(topMsg)) {
-                    tweets.set(topMsg, tweets.get(topMsg) + 1)
+                cell.tweetKey = topTweetKey;
+                if (tweets.has(topTweetKey)) {
+                    tweetInfo = tweets.get(topTweetKey);
+                    tweetInfo.count++;
+                    tweetInfo.textOffset = roller.curTweetPos;
                 } else {
-                    tweets.set(topMsg, 1);
+                    tweets.set(topTweetKey, {
+                        stGridI: i,
+                        stGridH: roller.cellInd,
+                        url: topTweet.tweetUrl,
+                        text: topTweetText,
+                        textOffset: roller.curTweetPos,
+                        count: 1
+                    });
                 }
 
                 roller.curTweetPos++;
-                if (roller.curTweetPos >= topMsg.length) {
+                if (roller.curTweetPos >= topTweetText.length) {
                     roller.curTweetPos = 0;
                     roller.tweetQueue.shift();
                 }
@@ -84,6 +97,25 @@ $(document).ready(function () {
                 }
             }
         }
+
+        ctxover.clearRect(0, 0, WIDTH, HEIGHT);
+        ctxover.font = FONT;
+        if (hoverTweetKey) {
+            tweetInfo = tweets.get(hoverTweetKey);
+            gi = tweetInfo.stGridI;
+            gh = tweetInfo.stGridH;
+            for (i = 0; i <= tweetInfo.textOffset; i++) {
+                cell = grid[gi][gh];
+                ctxover.clearRect(cell.x, cell.y - CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT);
+                ctxover.fillStyle = '#FFF';
+                ctxover.fillText(tweetInfo.text[i], cell.x, cell.y);
+                gh++;
+                if (gh >= GRIDM) {
+                    gh = 0;
+                }
+            }
+        }
+
     };
     RunMatrix();
     function RunMatrix() {
@@ -91,47 +123,23 @@ $(document).ready(function () {
         Game_Interval = setInterval(draw, 33);
     }
 
-    q.addEventListener('click', function (e) {
-        var clickedX = e.pageX - this.offsetLeft;
-        var clickedY = e.pageY - this.offsetTop;
-        var gridI = Math.floor(clickedY / CELL_HEIGHT);
-        var gridH = Math.floor(clickedX / CELL_WIDTH);
-        var cell = grid[gridI][gridH];
-        copyTextToClipboard(cell.tweetKey);
+    canvover.addEventListener('click', function (e) {
+        tweetKey = mouseEventToGridCell(this, e).tweetKey;
+        if (tweetKey) {
+            window.open(tweets.get(tweetKey).url);
+        }
     });
 
-    function copyTextToClipboard(text) {
-        var textArea = document.createElement("textarea");
-        textArea.style.position = 'fixed';
-        textArea.style.top = 0;
-        textArea.style.left = 0;
-        textArea.style.width = '2em';
-        textArea.style.height = '2em';
-        textArea.style.padding = 0;
-        textArea.style.border = 'none';
-        textArea.style.outline = 'none';
-        textArea.style.boxShadow = 'none';
-        textArea.style.background = 'transparent';
+    canvover.addEventListener('mousemove', function(e) {
+        hoverTweetKey = mouseEventToGridCell(this, e).tweetKey;
+    });
 
-        textArea.value = text;
-
-        document.body.appendChild(textArea);
-
-        textArea.select();
-
-        reportFailure = function() {
-            console.log('Oops, unable to copy, text=' + text);
-        };
-        try {
-            var successful = document.execCommand('copy');
-        } catch (err) {
-            reportFailure();
-        }
-        if (!successful) {
-            reportFailure();
-        }
-
-        document.body.removeChild(textArea);
+    function mouseEventToGridCell(ref, e) {
+        var clickedX = e.pageX - ref.offsetLeft;
+        var clickedY = e.pageY - ref.offsetTop;
+        var gridI = Math.floor(clickedY / CELL_HEIGHT);
+        var gridH = Math.floor(clickedX / CELL_WIDTH);
+        return grid[gridI][gridH];
     }
 
     url = "ws://" +  location.hostname + ":61614/stomp";
@@ -141,7 +149,7 @@ $(document).ready(function () {
         client.subscribe("/topic/twitter.tweet",
             function( message ) {
                 var row = Math.floor(Math.random() * rollers.length);
-                rollers[row].tweetQueue.push(message.body);
+                rollers[row].tweetQueue.push(JSON.parse(message.body));
             },
             { priority: 9 }
         );
