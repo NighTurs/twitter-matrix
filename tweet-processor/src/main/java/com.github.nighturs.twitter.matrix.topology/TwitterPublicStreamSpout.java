@@ -33,7 +33,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 class TwitterPublicStreamSpout extends BaseRichSpout {
 
     private static final Logger logger = LoggerFactory.getLogger(TwitterPublicStreamSpout.class);
-
     static final String API_CONSUMER_KEY_PROP = "twitter.api.consumer.key.prop";
     static final String API_CONSUMER_SECRET_PROP = "twitter.api.consumer.secret.prop";
     static final String API_TOKEN_PROP = "twitter.api.token.prop";
@@ -128,8 +127,10 @@ class TwitterPublicStreamSpout extends BaseRichSpout {
     public void nextTuple() {
         Status status = statusQueue.poll();
         if (status != null) {
-            String tweetJson =
-                    String.format("{\"tweetUrl\":\"%s\",\"tweetText\":\"%s\"}", status.getSource(), status.getText());
+            String tweetJson = String.format(
+                    "{\"tweetUrl\":\"https://twitter.com/user/status/%s\",\"tweetText\":\"%s\"}",
+                    status.getId(),
+                    status.getText());
             spoutOutputCollector.emit(Lists.newArrayList(tweetJson));
             logger.info("Produced, Text={}", tweetJson);
         }
