@@ -17,6 +17,7 @@ import com.twitter.hbc.core.processor.StringDelimitedProcessor;
 import com.twitter.hbc.httpclient.auth.Authentication;
 import com.twitter.hbc.httpclient.auth.OAuth1;
 import com.twitter.hbc.twitter4j.Twitter4jStatusClient;
+import org.aeonbits.owner.ConfigFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import twitter4j.StallWarning;
@@ -29,23 +30,13 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.stream.Collectors;
 
 class TwitterPublicStreamSpout extends BaseRichSpout {
 
     private static final Logger logger = LoggerFactory.getLogger(TwitterPublicStreamSpout.class);
-    static final String API_CONSUMER_KEY_PROP = "twitter.api.consumer.key.prop";
-    static final String API_CONSUMER_SECRET_PROP = "twitter.api.consumer.secret.prop";
-    static final String API_TOKEN_PROP = "twitter.api.token.prop";
-    static final String API_TOKEN_SECRET_PROP = "twitter.api.token.secret.prop";
-    static final String API_PARAMETERS_TRACK = "twitter.api.parameters.track";
-    static final String API_PARAMETERS_LANGUAGE = "twitter.api.parameters.language";
     private static final int MSG_QUEUE_CAPACITY = 100000;
-    private String apiConsumerKey;
-    private String apiConsumerSecret;
-    private String apiToken;
-    private String apiTokenSecret;
-    private String apiParametersTrack;
-    private String apiParametersLanguage;
+    private TwitterApiConfig twitterApiConfig;
     private BlockingQueue<Status> statusQueue;
     private SpoutOutputCollector spoutOutputCollector;
 
@@ -56,12 +47,12 @@ class TwitterPublicStreamSpout extends BaseRichSpout {
 
     @Override
     public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {
-        apiConsumerKey = (String) conf.get(API_CONSUMER_KEY_PROP);
-        apiConsumerSecret = (String) conf.get(API_CONSUMER_SECRET_PROP);
-        apiToken = (String) conf.get(API_TOKEN_PROP);
-        apiTokenSecret = (String) conf.get(API_TOKEN_SECRET_PROP);
-        apiParametersTrack = (String) conf.get(API_PARAMETERS_TRACK);
-        apiParametersLanguage = (String) conf.get(API_PARAMETERS_LANGUAGE);
+        //noinspection unchecked
+        Map<String, String> nonNullValuesConf = ((Map<String, String>) conf).entrySet()
+                .stream()
+                .filter(x -> x.getValue() != null)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        twitterApiConfig = ConfigFactory.create(TwitterApiConfig.class, nonNullValuesConf);
         this.spoutOutputCollector = collector;
         this.statusQueue = new LinkedBlockingQueue<>();
         setupApiClient();
@@ -72,10 +63,13 @@ class TwitterPublicStreamSpout extends BaseRichSpout {
 
         Hosts apiHosts = new HttpHosts(Constants.STREAM_HOST);
         StatusesFilterEndpoint apiEndpoint = new StatusesFilterEndpoint();
-        apiEndpoint.languages(Collections.singletonList(apiParametersLanguage));
-        apiEndpoint.trackTerms(Lists.newArrayList(Splitter.on(",").split(apiParametersTrack)));
+        apiEndpoint.languages(Collections.singletonList(twitterApiConfig.twitterApiParametersLanguage()));
+        apiEndpoint.trackTerms(Lists.newArrayList(Splitter.on(",").split(twitterApiConfig.twitterApiParametersTrack())));
 
-        Authentication apiAuth = new OAuth1(apiConsumerKey, apiConsumerSecret, apiToken, apiTokenSecret);
+        Authentication apiAuth = new OAuth1(twitterApiConfig.twitterApiConsumerKey(),
+                twitterApiConfig.twitterApiConsumerSecret(),
+                twitterApiConfig.twitterApiToken(),
+                twitterApiConfig.twitterApiTokenSecret());
 
         ClientBuilder builder = new ClientBuilder().name("twitter-public-stream-client-01")
                 .hosts(apiHosts)

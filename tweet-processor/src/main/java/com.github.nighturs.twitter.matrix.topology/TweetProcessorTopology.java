@@ -8,6 +8,7 @@ import backtype.storm.topology.TopologyBuilder;
 import org.aeonbits.owner.ConfigFactory;
 
 final class TweetProcessorTopology {
+
     private static final String TWITTER_PUBLIC_STREAM_SPOUT = "TWITTER_PUBLIC_STREAM_SPOUT";
     private static final String JMS_TWEET_TOPIC_BOLT = "JMS_TWEET_TOPIC_BOLT";
     private static final String TWEET_PROCESSOR = "TWEET_PROCESSOR";
@@ -28,12 +29,9 @@ final class TweetProcessorTopology {
         builder.setBolt(JMS_TWEET_TOPIC_BOLT, tweetJmsBolt).shuffleGrouping(TWITTER_PUBLIC_STREAM_SPOUT);
 
         Config config = new Config();
-        config.put(TwitterPublicStreamSpout.API_CONSUMER_KEY_PROP, apiConfig.twitterApiConsumerKey());
-        config.put(TwitterPublicStreamSpout.API_CONSUMER_SECRET_PROP, apiConfig.twitterApiConsumerSecret());
-        config.put(TwitterPublicStreamSpout.API_TOKEN_PROP, apiConfig.twitterApiToken());
-        config.put(TwitterPublicStreamSpout.API_TOKEN_SECRET_PROP, apiConfig.twitterApiTokenSecret());
-        config.put(TwitterPublicStreamSpout.API_PARAMETERS_TRACK, apiConfig.twitterApiParametersTrack());
-        config.put(TwitterPublicStreamSpout.API_PARAMETERS_LANGUAGE, apiConfig.twitterApiParametersLanguage());
+        for (String propName : apiConfig.propertyNames()) {
+            config.put(propName, apiConfig.getProperty(propName));
+        }
 
         new LocalCluster().submitTopology(TWEET_PROCESSOR, config, builder.createTopology());
     }
