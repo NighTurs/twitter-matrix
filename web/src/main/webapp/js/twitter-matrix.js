@@ -3,7 +3,7 @@ $(document).ready(function () {
     var CELL_WIDTH = 10;
     var BCOLOR = '#000';
     var NEW_CHAR_COLOR = '#0F0';
-    var FONT = '10pt Georgia';
+    var FONT = '10pt Courier New';
     var WIDTH = canv.width = canvover.width = window.innerWidth;
     var HEIGHT = canv.height = canvover.height = window.innerHeight;
     var GRIDN = Math.floor((HEIGHT - CELL_HEIGHT) / CELL_HEIGHT);
