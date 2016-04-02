@@ -2,7 +2,6 @@ package com.github.nighturs.twittermatrix.topology;
 
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
-import backtype.storm.contrib.jms.JmsMessageProducer;
 import backtype.storm.contrib.jms.bolt.JmsBolt;
 import backtype.storm.topology.TopologyBuilder;
 import com.github.nighturs.twittermatrix.ActiveMqConfig;
@@ -13,6 +12,7 @@ final class TweetProcessorTopology {
     private static final String TWITTER_PUBLIC_STREAM_SPOUT = "TWITTER_PUBLIC_STREAM_SPOUT";
     private static final String JMS_TWEET_TOPIC_BOLT = "JMS_TWEET_TOPIC_BOLT";
     private static final String TWEET_PROCESSOR = "TWEET_PROCESSOR";
+    private static final String TWEET_TO_JSON_BOLT = "TWEET_TO_JSON_BOLT";
 
     private TweetProcessorTopology() {
     }
@@ -22,14 +22,15 @@ final class TweetProcessorTopology {
         ActiveMqConfig mqConfig = ConfigFactory.create(ActiveMqConfig.class);
         TopologyBuilder builder = new TopologyBuilder();
         builder.setSpout(TWITTER_PUBLIC_STREAM_SPOUT, new TwitterPublicStreamSpout());
+        builder.setBolt(TWEET_TO_JSON_BOLT, new TweetToJsonBolt()).shuffleGrouping(TWITTER_PUBLIC_STREAM_SPOUT);
 
         JmsBolt tweetJmsBolt = new JmsBolt();
         tweetJmsBolt.setJmsProvider(new TweetJmsProvider(mqConfig));
-        tweetJmsBolt.setJmsMessageProducer((JmsMessageProducer) (session, input) -> session.createTextMessage(input.getStringByField(
-                "TWEET_TEXT")));
-        builder.setBolt(JMS_TWEET_TOPIC_BOLT, tweetJmsBolt).shuffleGrouping(TWITTER_PUBLIC_STREAM_SPOUT);
+        tweetJmsBolt.setJmsMessageProducer(new TweetMessageProducer());
+        builder.setBolt(JMS_TWEET_TOPIC_BOLT, tweetJmsBolt).shuffleGrouping(TWEET_TO_JSON_BOLT);
 
         Config config = new Config();
+        config.registerSerialization(Tweet.class);
         for (String propName : apiConfig.propertyNames()) {
             config.put(propName, apiConfig.getProperty(propName));
         }

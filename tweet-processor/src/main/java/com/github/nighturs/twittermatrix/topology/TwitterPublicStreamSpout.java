@@ -41,6 +41,7 @@ class TwitterPublicStreamSpout extends BaseRichSpout implements MessageListener 
 
     private static final Logger logger = LoggerFactory.getLogger(TwitterPublicStreamSpout.class);
     private static final int MSG_QUEUE_CAPACITY = 100000;
+    static final String TWEET_FIELD = "tweet";
     private TwitterApiConfig twitterApiConfig;
     private ActiveMqConfig activeMqConfig;
     private BlockingQueue<Status> statusQueue;
@@ -50,7 +51,7 @@ class TwitterPublicStreamSpout extends BaseRichSpout implements MessageListener 
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields("TWEET_TEXT"));
+        declarer.declare(new Fields(TWEET_FIELD));
     }
 
     @Override
@@ -123,12 +124,9 @@ class TwitterPublicStreamSpout extends BaseRichSpout implements MessageListener 
     public void nextTuple() {
         Status status = statusQueue.poll();
         if (status != null) {
-            String tweetJson = String.format(
-                    "{\"tweetUrl\":\"https://twitter.com/user/status/%s\",\"tweetText\":\"%s\"}",
-                    status.getId(),
-                    status.getText());
-            spoutOutputCollector.emit(Lists.newArrayList(tweetJson));
-            logger.info("Produced, Text={}", tweetJson);
+            Tweet tweet = new Tweet(status.getId(), status.getText());
+            spoutOutputCollector.emit(Lists.newArrayList(tweet));
+            logger.info("Produced, Tweet={}", tweet);
         }
     }
 
