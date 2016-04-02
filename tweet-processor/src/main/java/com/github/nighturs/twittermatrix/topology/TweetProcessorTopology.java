@@ -1,10 +1,11 @@
-package com.github.nighturs.twitter.matrix.topology;
+package com.github.nighturs.twittermatrix.topology;
 
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.contrib.jms.JmsMessageProducer;
 import backtype.storm.contrib.jms.bolt.JmsBolt;
 import backtype.storm.topology.TopologyBuilder;
+import com.github.nighturs.twittermatrix.ActiveMqConfig;
 import org.aeonbits.owner.ConfigFactory;
 
 final class TweetProcessorTopology {
@@ -30,6 +31,9 @@ final class TweetProcessorTopology {
 
         Config config = new Config();
         for (String propName : apiConfig.propertyNames()) {
+            config.put(propName, apiConfig.getProperty(propName));
+        }
+        for (String propName : mqConfig.propertyNames()) {
             config.put(propName, apiConfig.getProperty(propName));
         }
 

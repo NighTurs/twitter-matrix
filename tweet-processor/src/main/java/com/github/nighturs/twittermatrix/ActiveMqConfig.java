@@ -1,10 +1,10 @@
-package com.github.nighturs.twitter.matrix.topology;
+package com.github.nighturs.twittermatrix;
 
-import org.aeonbits.owner.Config;
+import org.aeonbits.owner.Accessible;
 import org.aeonbits.owner.Config.Sources;
 
 @Sources("classpath:activeMqConfig.properties")
-interface ActiveMqConfig extends Config {
+public interface ActiveMqConfig extends Accessible {
 
     @Key("activemq.url")
     String activeMqUrl();
@@ -17,4 +17,7 @@ interface ActiveMqConfig extends Config {
 
     @Key("activemq.twitter.tweet.topic")
     String activeMqTwitterTweetTopic();
+
+    @Key("activemq.twitter.stream.params.topic")
+    String activeMqTwitterStreamParamsTopic();
 }

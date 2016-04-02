@@ -1,6 +1,7 @@
-package com.github.nighturs.twitter.matrix.topology;
+package com.github.nighturs.twittermatrix.topology;
 
 import backtype.storm.contrib.jms.JmsProvider;
+import com.github.nighturs.twittermatrix.ActiveMqConfig;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.command.ActiveMQTopic;
 

@@ -26,6 +26,8 @@
                         <authorizationEntries>
                             <authorizationEntry queue=">" read="admins" write="admins" admin="admins"/>
                             <authorizationEntry topic=">" read="admins" write="admins" admin="admins"/>
+                            <authorizationEntry topic="twitter.>" read="users" write="users"
+                                                admin="users"/>
                             <authorizationEntry topic="twitter.tweet" read="users,anonymous" write="users"
                                                 admin="users"/>
                             <authorizationEntry topic="ActiveMQ.Advisory.>" read="guests,users"
