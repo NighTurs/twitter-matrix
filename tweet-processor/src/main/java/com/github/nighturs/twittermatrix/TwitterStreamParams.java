@@ -8,7 +8,7 @@ public class TwitterStreamParams {
     private final List<String> trackPhrases;
     private final List<String> languages;
 
-    TwitterStreamParams(List<String> trackPhrases, List<String> languages) {
+    public TwitterStreamParams(List<String> trackPhrases, List<String> languages) {
         this.trackPhrases = trackPhrases;
         this.languages = languages;
     }

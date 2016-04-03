@@ -32,11 +32,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
+import static com.github.nighturs.twittermatrix.topology.TweetProcessorTopology.TWEET_FIELD;
+
 class TwitterPublicStreamSpout extends BaseRichSpout {
 
     private static final Logger logger = LoggerFactory.getLogger(TwitterPublicStreamSpout.class);
     private static final int MSG_QUEUE_CAPACITY = 100000;
-    static final String TWEET_FIELD = "tweet";
     private TwitterApiConfig twitterApiConfig;
     private BlockingQueue<Status> statusQueue;
     private SpoutOutputCollector spoutOutputCollector;
@@ -105,7 +106,7 @@ class TwitterPublicStreamSpout extends BaseRichSpout {
         if (status != null) {
             Tweet tweet = new Tweet(status.getId(), status.getText());
             spoutOutputCollector.emit(Lists.newArrayList(tweet));
-            logger.info("Produced, Tweet={}", tweet);
+            logger.info("Produced, Tweet={}, Status={}", tweet, status);
         }
     }
 

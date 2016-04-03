@@ -13,6 +13,8 @@ final class TweetProcessorTopology {
     private static final String JMS_TWEET_TOPIC_BOLT = "JMS_TWEET_TOPIC_BOLT";
     private static final String TWEET_PROCESSOR = "TWEET_PROCESSOR";
     private static final String TWEET_TO_JSON_BOLT = "TWEET_TO_JSON_BOLT";
+    private static final String TWEET_PHRASE_MATCHER_BOLT = "TWEET_PHRASE_MATCHER_BOLT";
+    static final String TWEET_FIELD = "tweet";
 
     private TweetProcessorTopology() {
     }
@@ -22,7 +24,9 @@ final class TweetProcessorTopology {
         ActiveMqConfig mqConfig = ConfigFactory.create(ActiveMqConfig.class);
         TopologyBuilder builder = new TopologyBuilder();
         builder.setSpout(TWITTER_PUBLIC_STREAM_SPOUT, new TwitterPublicStreamSpout());
-        builder.setBolt(TWEET_TO_JSON_BOLT, new TweetToJsonBolt()).shuffleGrouping(TWITTER_PUBLIC_STREAM_SPOUT);
+        builder.setBolt(TWEET_PHRASE_MATCHER_BOLT, new TweetPhraseMatcherBolt())
+                .shuffleGrouping(TWITTER_PUBLIC_STREAM_SPOUT);
+        builder.setBolt(TWEET_TO_JSON_BOLT, new TweetToJsonBolt()).shuffleGrouping(TWEET_PHRASE_MATCHER_BOLT);
 
         JmsBolt tweetJmsBolt = new JmsBolt();
         tweetJmsBolt.setJmsProvider(new TweetJmsProvider(mqConfig));

@@ -9,6 +9,8 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import static com.github.nighturs.twittermatrix.topology.TweetProcessorTopology.TWEET_FIELD;
+
 class TweetToJsonBolt extends BaseBasicBolt {
 
     private static final String JSON_TWEET_FIELD = "tweetJson";
@@ -16,7 +18,7 @@ class TweetToJsonBolt extends BaseBasicBolt {
 
     @Override
     public void execute(Tuple input, BasicOutputCollector collector) {
-        Tweet tweet = (Tweet) input.getValueByField(TwitterPublicStreamSpout.TWEET_FIELD);
+        Tweet tweet = (Tweet) input.getValueByField(TWEET_FIELD);
         String json = gson.toJson(new TweetView(tweet));
         collector.emit(Lists.newArrayList(json));
     }
