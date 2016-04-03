@@ -8,8 +8,6 @@ import backtype.storm.tuple.Fields;
 import com.github.nighturs.twittermatrix.ActiveMqConfig;
 import com.github.nighturs.twittermatrix.TwitterStreamParams;
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.twitter.hbc.ClientBuilder;
 import com.twitter.hbc.core.Client;
 import com.twitter.hbc.core.Constants;
@@ -21,8 +19,6 @@ import com.twitter.hbc.httpclient.auth.Authentication;
 import com.twitter.hbc.httpclient.auth.OAuth1;
 import com.twitter.hbc.twitter4j.Twitter4jStatusClient;
 import org.aeonbits.owner.ConfigFactory;
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.command.ActiveMQTopic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import twitter4j.StallWarning;
@@ -30,24 +26,23 @@ import twitter4j.Status;
 import twitter4j.StatusDeletionNotice;
 import twitter4j.StatusListener;
 
-import javax.jms.*;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
-class TwitterPublicStreamSpout extends BaseRichSpout implements MessageListener {
+class TwitterPublicStreamSpout extends BaseRichSpout {
 
     private static final Logger logger = LoggerFactory.getLogger(TwitterPublicStreamSpout.class);
     private static final int MSG_QUEUE_CAPACITY = 100000;
     static final String TWEET_FIELD = "tweet";
     private TwitterApiConfig twitterApiConfig;
-    private ActiveMqConfig activeMqConfig;
     private BlockingQueue<Status> statusQueue;
     private SpoutOutputCollector spoutOutputCollector;
-    private Gson gson;
     private Twitter4jStatusClient t4jClient;
+    @SuppressWarnings("FieldCanBeLocal")
+    private TwitterStreamParamsMessageListener paramsMessageListener;
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
@@ -62,27 +57,11 @@ class TwitterPublicStreamSpout extends BaseRichSpout implements MessageListener 
                 .filter(x -> x.getValue() != null)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         this.twitterApiConfig = ConfigFactory.create(TwitterApiConfig.class, nonNullValuesConf);
-        this.activeMqConfig = ConfigFactory.create(ActiveMqConfig.class, nonNullValuesConf);
+        ActiveMqConfig activeMqConfig = ConfigFactory.create(ActiveMqConfig.class, nonNullValuesConf);
         this.spoutOutputCollector = collector;
         this.statusQueue = new LinkedBlockingQueue<>();
-        this.gson = new GsonBuilder().create();
-        listenStreamParamChanges();
-    }
-
-    private void listenStreamParamChanges() {
-        try {
-            ConnectionFactory cf = new ActiveMQConnectionFactory(activeMqConfig.activeMqUsername(),
-                    activeMqConfig.activeMqPassword(),
-                    activeMqConfig.activeMqUrl());
-            Destination dest = new ActiveMQTopic(activeMqConfig.activeMqTwitterStreamParamsTopic());
-            Connection connection = cf.createConnection();
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            MessageConsumer consumer = session.createConsumer(dest);
-            consumer.setMessageListener(this);
-            connection.start();
-        } catch (Exception e) {
-            logger.warn("Error creating JMS connection", e);
-        }
+        this.paramsMessageListener = new TwitterStreamParamsMessageListener(this::onApiParamsUpdate);
+        paramsMessageListener.listenStreamParamChanges(activeMqConfig);
     }
 
     private void restartApiClient(TwitterStreamParams params) {
@@ -130,16 +109,8 @@ class TwitterPublicStreamSpout extends BaseRichSpout implements MessageListener 
         }
     }
 
-    @Override
-    public void onMessage(Message message) {
-        logger.info("Received stream param message, Message={}", message);
-        try {
-            String json = ((TextMessage) message).getText();
-            TwitterStreamParams params = gson.fromJson(json, TwitterStreamParams.class);
-            restartApiClient(params);
-        } catch (JMSException e) {
-            logger.error("Failed to handle message, Message={}", message, e);
-        }
+    private void onApiParamsUpdate(TwitterStreamParams params) {
+        restartApiClient(params);
     }
 
     private static class BasicStatusListener implements StatusListener {
