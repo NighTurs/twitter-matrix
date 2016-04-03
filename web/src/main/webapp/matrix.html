@@ -1,10 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel="stylesheet" href="css/bootstrap.min.css"
+          integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7">
+    <link rel="stylesheet" href="css/bootstrap-theme.min.css"
+          integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r">
+    <link rel="stylesheet" href="css/twitter-matrix.css">
     <script src="js/jquery-1.12.2.min.js">
     </script>
     <script src="js/stomp.js"></script>
     <script src="js/twitter-matrix.js"></script>
+    <script src="js/bootstrap.min.js"></script>
     <meta charset="utf-8">
     <title>Twitter matrix</title>
 </head>
@@ -14,6 +20,33 @@
             style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
     <canvas id="canvover"
             style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
+    <button type="button" class="btn btn-config btn-md" aria-pressed="false"
+            data-toggle="modal" data-target="#configModal"
+            style="position: absolute; right: 0; top: 0; z-index: 1051;">
+        <span class="glyphicon glyphicon-cog"></span>
+    </button>
+
+    <!-- Modal -->
+    <div class="modal right fade" id="configModal" tabindex="-1" role="dialog" style="z-index: 1050">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="btn-group-vertical" data-toggle="buttons">
+                        <label class="btn btn-switch">
+                            <input type="checkbox" autocomplete="off"> Good evening
+                        </label>
+                        <label class="btn btn-switch">
+                            <input type="checkbox" autocomplete="off"> Ladies
+                        </label>
+                        <label class="btn btn-switch">
+                            <input type="checkbox" autocomplete="off"> And gentelmens
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
 </div>
 </body>
 </html>

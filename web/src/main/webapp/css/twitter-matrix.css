@@ -1,0 +1,82 @@
+.modal.right .modal-dialog {
+    position: fixed;
+    margin: auto;
+    width: 320px;
+    height: 100%;
+    -webkit-transform: translate3d(0%, 0, 0);
+    -ms-transform: translate3d(0%, 0, 0);
+    -o-transform: translate3d(0%, 0, 0);
+    transform: translate3d(0%, 0, 0);
+}
+
+.modal.right .modal-content {
+    height: 100%;
+    overflow-y: auto;
+}
+
+.modal.right .modal-body {
+    padding: 30px 15px 80px;
+}
+
+.modal.right.fade .modal-dialog {
+    right: -320px;
+    -webkit-transition: opacity 0.3s linear, right 0.3s ease-out;
+    -moz-transition: opacity 0.3s linear, right 0.3s ease-out;
+    -o-transition: opacity 0.3s linear, right 0.3s ease-out;
+    transition: opacity 0.3s linear, right 0.3s ease-out;
+}
+
+.modal.right.fade.in .modal-dialog {
+    right: 0;
+}
+
+.modal-content {
+    border-radius: 0;
+    border: none;
+    background-color: black;
+}
+
+/*Buttons style*/
+
+.btn:focus,.btn:active:focus,.btn.active:focus {
+    outline: none;
+}
+
+.btn-config {
+    color: #FFFFFF;
+    background-color: transparent;
+    border-color: transparent;
+}
+
+.btn-config:hover,
+.btn-config:focus,
+.btn-config:active,
+.btn-config.active,
+.open .dropdown-toggle.btn-config {
+    color: #FFFFFF;
+    background-color: transparent;
+    border-color: transparent;
+}
+
+
+.btn-switch {
+    color: #FF0000;
+    text-align: left;
+    white-space: normal;
+}
+
+.btn-switch:hover,
+.btn-switch:focus {
+    color: #FF0000;
+}
+
+.btn-switch:hover:active,
+.btn-switch:focus:active {
+    color: #00FF00;
+}
+
+.btn-switch:active,
+.btn-switch.active,
+.open .dropdown-toggle.btn-switch {
+    color: #00FF00;
+}
