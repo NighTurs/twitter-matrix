@@ -35,7 +35,7 @@ class TweetToJsonBolt extends BaseBasicBolt {
         private final String tweetText;
 
         TweetView(Tweet tweet) {
-            tweetUrl = String.format("https://twitter.com/user/status/%s", tweet.getId());
+            tweetUrl = tweet.getUrl();
             tweetText = tweet.getText();
         }
     }

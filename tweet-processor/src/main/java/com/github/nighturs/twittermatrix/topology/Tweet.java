@@ -13,7 +13,7 @@ final class Tweet implements Serializable {
     private final String text;
     private final List<String> matchedPhrases;
 
-    private Tweet(long id, String userScreenName, String text) {
+    Tweet(long id, String userScreenName, String text) {
         this.userScreenName = userScreenName;
         this.id = id;
         this.text = text;
@@ -30,6 +30,10 @@ final class Tweet implements Serializable {
     static Tweet of(Status status) {
         Status actualStatus = status.getRetweetedStatus() == null ? status : status.getRetweetedStatus();
         return new Tweet(actualStatus.getId(), actualStatus.getUser().getScreenName(), actualStatus.getText());
+    }
+
+    String getUrl() {
+        return String.format("https://twitter.com/%s/status/%s", userScreenName, id);
     }
 
     @SuppressWarnings("ParameterHidesMemberVariable")
