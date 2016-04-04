@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import static com.github.nighturs.twittermatrix.topology.TweetProcessorTopology.TWEET_FIELD;
 
@@ -84,8 +85,12 @@ class TweetPhraseMatcherBolt extends BaseBasicBolt {
         Multimap<String, String> prhasesPerTerm = HashMultimap.create();
 
         for (String phrase : params.getTrackPhrases()) {
-            String[] terms = phrase.toLowerCase(Locale.ROOT).split(" ");
-            termsCountPerPhrase.put(phrase, terms.length);
+            List<String> terms = Splitter.on(" ")
+                    .splitToList(phrase.toLowerCase(Locale.ROOT))
+                    .stream()
+                    .filter(x -> !x.isEmpty())
+                    .collect(Collectors.toList());
+            termsCountPerPhrase.put(phrase, terms.size());
             for (String term : terms) {
                 prhasesPerTerm.put(term, phrase);
             }

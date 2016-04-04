@@ -104,7 +104,7 @@ class TwitterPublicStreamSpout extends BaseRichSpout {
     public void nextTuple() {
         Status status = statusQueue.poll();
         if (status != null) {
-            Tweet tweet = new Tweet(status.getId(), status.getText());
+            Tweet tweet = Tweet.of(status);
             spoutOutputCollector.emit(Lists.newArrayList(tweet));
             logger.info("Produced, Tweet={}, Status={}", tweet, status);
         }

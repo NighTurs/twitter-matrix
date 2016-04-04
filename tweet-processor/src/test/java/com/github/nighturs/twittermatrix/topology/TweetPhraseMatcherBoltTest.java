@@ -21,6 +21,13 @@ public class TweetPhraseMatcherBoltTest {
     }
 
     @Test
+    public void testOnApiParamsUpdateExtraSpacesIgnored() throws Exception {
+        TweetPhraseMatcherBolt bolt = new TweetPhraseMatcherBolt();
+        bolt.onApiParamsUpdate(new TwitterStreamParams(Lists.newArrayList("   two    terms   "), null));
+        assertEquals(Integer.valueOf(2), bolt.trackPhrases.get().termsCountPerPhrase.get("   two    terms   "));
+    }
+
+    @Test
     public void testFindMatchedPhrases() throws Exception {
         TweetPhraseMatcherBolt bolt = new TweetPhraseMatcherBolt();
         bolt.trackPhrases.set(sharedTrachPhrases());
