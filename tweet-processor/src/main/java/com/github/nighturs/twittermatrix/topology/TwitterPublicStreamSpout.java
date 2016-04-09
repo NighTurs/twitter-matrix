@@ -6,6 +6,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
 import com.github.nighturs.twittermatrix.ActiveMqConfig;
+import com.github.nighturs.twittermatrix.Tweet;
 import com.github.nighturs.twittermatrix.TweetPhrase;
 import com.github.nighturs.twittermatrix.TwitterStreamParams;
 import com.google.common.collect.Lists;

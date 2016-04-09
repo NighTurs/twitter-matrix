@@ -7,6 +7,7 @@ import backtype.storm.topology.base.BaseBasicBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import com.github.nighturs.twittermatrix.ActiveMqConfig;
+import com.github.nighturs.twittermatrix.Tweet;
 import com.github.nighturs.twittermatrix.TweetPhrase;
 import com.github.nighturs.twittermatrix.TwitterStreamParams;
 import com.google.common.base.Splitter;

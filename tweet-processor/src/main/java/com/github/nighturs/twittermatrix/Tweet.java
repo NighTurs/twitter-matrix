@@ -1,20 +1,18 @@
-package com.github.nighturs.twittermatrix.topology;
+package com.github.nighturs.twittermatrix;
 
-import com.github.nighturs.twittermatrix.TweetPhrase;
 import com.google.common.base.MoreObjects;
 import twitter4j.Status;
 
-import java.io.Serializable;
 import java.util.List;
 
-final class Tweet implements Serializable {
+public final class Tweet {
 
     private final long id;
     private final String userScreenName;
     private final String text;
     private final List<TweetPhrase> matchedPhrases;
 
-    Tweet(long id, String userScreenName, String text) {
+    public Tweet(long id, String userScreenName, String text) {
         this.userScreenName = userScreenName;
         this.id = id;
         this.text = text;
@@ -28,29 +26,29 @@ final class Tweet implements Serializable {
         this.matchedPhrases = matchedPhrases;
     }
 
-    static Tweet of(Status status) {
+    public static Tweet of(Status status) {
         Status actualStatus = status.getRetweetedStatus() == null ? status : status.getRetweetedStatus();
         return new Tweet(actualStatus.getId(), actualStatus.getUser().getScreenName(), actualStatus.getText());
     }
 
-    String getUrl() {
+    public String getUrl() {
         return String.format("https://twitter.com/%s/status/%s", userScreenName, id);
     }
 
     @SuppressWarnings("ParameterHidesMemberVariable")
-    Tweet withMatchedPhrases(List<TweetPhrase> matchedPhrases) {
+    public Tweet withMatchedPhrases(List<TweetPhrase> matchedPhrases) {
         return new Tweet(this, matchedPhrases);
     }
 
-    long getId() {
+    public long getId() {
         return id;
     }
 
-    String getText() {
+    public String getText() {
         return text;
     }
 
-    private String getUserScreenName() {
+    public String getUserScreenName() {
         return userScreenName;
     }
 
@@ -67,6 +65,4 @@ final class Tweet implements Serializable {
                 .add("matchedPhrases", matchedPhrases)
                 .toString();
     }
-
-    private static final long serialVersionUID = -8474868949029295001L;
 }

@@ -1,5 +1,6 @@
 package com.github.nighturs.twittermatrix.topology;
 
+import com.github.nighturs.twittermatrix.Tweet;
 import org.junit.Assert;
 import org.junit.Test;
 
