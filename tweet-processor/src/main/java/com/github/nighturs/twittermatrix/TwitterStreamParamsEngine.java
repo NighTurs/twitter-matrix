@@ -8,6 +8,7 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.command.ActiveMQTopic;
 
 import javax.jms.*;
+import java.util.stream.Collectors;
 
 public final class TwitterStreamParamsEngine {
 
@@ -18,8 +19,11 @@ public final class TwitterStreamParamsEngine {
         if (args.length != 2) {
             throw new IllegalArgumentException("Should be called with two arguments, languages and track phrases");
         }
-        TwitterStreamParams streamParams =
-                new TwitterStreamParams(Splitter.on(",").splitToList(args[1]), Splitter.on(",").splitToList(args[0]));
+        TwitterStreamParams streamParams = new TwitterStreamParams(Splitter.on(",")
+                .splitToList(args[1])
+                .stream()
+                .map(TweetPhrase::create)
+                .collect(Collectors.toList()), Splitter.on(",").splitToList(args[0]));
         ActiveMqConfig activeMqConfig = ConfigFactory.create(ActiveMqConfig.class);
         Gson gson = new GsonBuilder().create();
 

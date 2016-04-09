@@ -5,7 +5,10 @@ import backtype.storm.LocalCluster;
 import backtype.storm.contrib.jms.bolt.JmsBolt;
 import backtype.storm.topology.TopologyBuilder;
 import com.github.nighturs.twittermatrix.ActiveMqConfig;
+import com.github.nighturs.twittermatrix.TweetPhrase;
 import org.aeonbits.owner.ConfigFactory;
+
+import java.util.List;
 
 final class TweetProcessorTopology {
 
@@ -14,7 +17,12 @@ final class TweetProcessorTopology {
     private static final String TWEET_PROCESSOR = "TWEET_PROCESSOR";
     private static final String TWEET_TO_JSON_BOLT = "TWEET_TO_JSON_BOLT";
     private static final String TWEET_PHRASE_MATCHER_BOLT = "TWEET_PHRASE_MATCHER_BOLT";
+    private static final String TWEET_PHRASE_SPOUT = "TWEET_PHRASE_SPOUT";
+    private static final String TWEET_PHRASE_STATISTICS_BOLT = "TWEET_PHRASE_STATISTICS_BOLT";
+    private static final String JMS_TWEET_PHRASES_TOPIC_BOLT = "JMS_TWEET_PHRASES_TOPIC_BOLT";
+    private static final String TWEET_PHRASE_TO_JSON_BOLT = "TWEET_PHRASE_TO_JSON_BOLT";
     static final String TWEET_FIELD = "tweet";
+    static final String TWEET_PHRASES_FIELD = "tweetPhrases";
 
     private TweetProcessorTopology() {
     }
@@ -30,11 +38,25 @@ final class TweetProcessorTopology {
 
         JmsBolt tweetJmsBolt = new JmsBolt();
         tweetJmsBolt.setJmsProvider(new TweetJmsProvider(mqConfig));
-        tweetJmsBolt.setJmsMessageProducer(new TweetMessageProducer());
+        tweetJmsBolt.setJmsMessageProducer(new LoggingMessageProducer());
         builder.setBolt(JMS_TWEET_TOPIC_BOLT, tweetJmsBolt).shuffleGrouping(TWEET_TO_JSON_BOLT);
+
+        builder.setSpout(TWEET_PHRASE_SPOUT, new TweetPhraseSpout());
+        builder.setBolt(TWEET_PHRASE_STATISTICS_BOLT, new TweetPhraseStatisticsBolt())
+                .shuffleGrouping(TWEET_PHRASE_SPOUT)
+                .shuffleGrouping(TWEET_PHRASE_MATCHER_BOLT);
+        builder.setBolt(TWEET_PHRASE_TO_JSON_BOLT, new TweetPhrasesToJsonBolt())
+                .shuffleGrouping(TWEET_PHRASE_STATISTICS_BOLT);
+        JmsBolt tweetPhrasesJmsBolt = new JmsBolt();
+        tweetPhrasesJmsBolt.setJmsProvider(new TweetPhrasesJmsProvider(mqConfig));
+        tweetPhrasesJmsBolt.setJmsMessageProducer(new LoggingMessageProducer());
+        builder.setBolt(JMS_TWEET_PHRASES_TOPIC_BOLT, tweetPhrasesJmsBolt)
+                .shuffleGrouping(TWEET_PHRASE_TO_JSON_BOLT);
 
         Config config = new Config();
         config.registerSerialization(Tweet.class);
+        config.registerSerialization(List.class);
+        config.registerSerialization(TweetPhrase.class);
         for (String propName : apiConfig.propertyNames()) {
             config.put(propName, apiConfig.getProperty(propName));
         }

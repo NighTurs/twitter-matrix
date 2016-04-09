@@ -20,4 +20,7 @@ public interface ActiveMqConfig extends Accessible {
 
     @Key("activemq.twitter.stream.params.topic")
     String activeMqTwitterStreamParamsTopic();
+
+    @Key("activemq.twitter.tweet.phrases.topic")
+    String activeMqTwitterTweetPhrasesTopic();
 }

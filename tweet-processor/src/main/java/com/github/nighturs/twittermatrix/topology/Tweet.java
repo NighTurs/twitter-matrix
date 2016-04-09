@@ -1,5 +1,6 @@
 package com.github.nighturs.twittermatrix.topology;
 
+import com.github.nighturs.twittermatrix.TweetPhrase;
 import com.google.common.base.MoreObjects;
 import twitter4j.Status;
 
@@ -11,7 +12,7 @@ final class Tweet implements Serializable {
     private final long id;
     private final String userScreenName;
     private final String text;
-    private final List<String> matchedPhrases;
+    private final List<TweetPhrase> matchedPhrases;
 
     Tweet(long id, String userScreenName, String text) {
         this.userScreenName = userScreenName;
@@ -20,7 +21,7 @@ final class Tweet implements Serializable {
         this.matchedPhrases = null;
     }
 
-    private Tweet(Tweet tweet, List<String> matchedPhrases) {
+    private Tweet(Tweet tweet, List<TweetPhrase> matchedPhrases) {
         this.userScreenName = tweet.getUserScreenName();
         this.id = tweet.getId();
         this.text = tweet.getText();
@@ -37,7 +38,7 @@ final class Tweet implements Serializable {
     }
 
     @SuppressWarnings("ParameterHidesMemberVariable")
-    Tweet withMatchedPhrases(List<String> matchedPhrases) {
+    Tweet withMatchedPhrases(List<TweetPhrase> matchedPhrases) {
         return new Tweet(this, matchedPhrases);
     }
 
@@ -53,7 +54,7 @@ final class Tweet implements Serializable {
         return userScreenName;
     }
 
-    public List<String> getMatchedPhrases() {
+    public List<TweetPhrase> getMatchedPhrases() {
         return matchedPhrases;
     }
 

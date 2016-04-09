@@ -6,6 +6,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
 import com.github.nighturs.twittermatrix.ActiveMqConfig;
+import com.github.nighturs.twittermatrix.TweetPhrase;
 import com.github.nighturs.twittermatrix.TwitterStreamParams;
 import com.google.common.collect.Lists;
 import com.twitter.hbc.ClientBuilder;
@@ -18,7 +19,6 @@ import com.twitter.hbc.core.processor.StringDelimitedProcessor;
 import com.twitter.hbc.httpclient.auth.Authentication;
 import com.twitter.hbc.httpclient.auth.OAuth1;
 import com.twitter.hbc.twitter4j.Twitter4jStatusClient;
-import org.aeonbits.owner.ConfigFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import twitter4j.StallWarning;
@@ -52,13 +52,8 @@ class TwitterPublicStreamSpout extends BaseRichSpout {
 
     @Override
     public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {
-        //noinspection unchecked
-        Map<String, String> nonNullValuesConf = ((Map<String, String>) conf).entrySet()
-                .stream()
-                .filter(x -> x.getValue() != null)
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        this.twitterApiConfig = ConfigFactory.create(TwitterApiConfig.class, nonNullValuesConf);
-        ActiveMqConfig activeMqConfig = ConfigFactory.create(ActiveMqConfig.class, nonNullValuesConf);
+        this.twitterApiConfig = ConfigUtils.createFromStormConf(TwitterApiConfig.class, conf);
+        ActiveMqConfig activeMqConfig = ConfigUtils.createFromStormConf(ActiveMqConfig.class, conf);
         this.spoutOutputCollector = collector;
         this.statusQueue = new LinkedBlockingQueue<>();
         this.paramsMessageListener = new TwitterStreamParamsMessageListener(this::onApiParamsUpdate);
@@ -77,7 +72,10 @@ class TwitterPublicStreamSpout extends BaseRichSpout {
         Hosts apiHosts = new HttpHosts(Constants.STREAM_HOST);
         StatusesFilterEndpoint apiEndpoint = new StatusesFilterEndpoint();
         apiEndpoint.languages(params.getLanguages());
-        apiEndpoint.trackTerms(params.getTrackPhrases());
+        apiEndpoint.trackTerms(params.getTrackPhrases()
+                .stream()
+                .map(TweetPhrase::getPhrase)
+                .collect(Collectors.toList()));
 
         Authentication apiAuth = new OAuth1(twitterApiConfig.twitterApiConsumerKey(),
                 twitterApiConfig.twitterApiConsumerSecret(),

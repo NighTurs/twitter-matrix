@@ -9,9 +9,9 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
 
-class TweetMessageProducer implements JmsMessageProducer {
+class LoggingMessageProducer implements JmsMessageProducer {
 
-    private static final Logger logger = LoggerFactory.getLogger(TweetMessageProducer.class);
+    private static final Logger logger = LoggerFactory.getLogger(LoggingMessageProducer.class);
 
     @Override
     public Message toMessage(Session session, Tuple input) throws JMSException {
