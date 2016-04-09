@@ -30,6 +30,8 @@
                                                 admin="users"/>
                             <authorizationEntry topic="twitter.tweet" read="users,anonymous" write="users"
                                                 admin="users"/>
+                            <authorizationEntry topic="twitter.tweet.phrases" read="users,anonymous" write="users"
+                                                admin="users"/>
                             <authorizationEntry topic="ActiveMQ.Advisory.>" read="guests,users"
                                                 write="guests,users"
                                                 admin="guests,users"/>

@@ -130,7 +130,7 @@ $(document).ready(function () {
         }
     });
 
-    canvover.addEventListener('mousemove', function(e) {
+    canvover.addEventListener('mousemove', function (e) {
         hoverTweetKey = mouseEventToGridCell(this, e).tweetKey;
     });
 
@@ -142,16 +142,33 @@ $(document).ready(function () {
         return grid[gridI][gridH];
     }
 
-    url = "ws://" +  location.hostname + ":61614/stomp";
+    url = "ws://" + location.hostname + ":61614/stomp";
     client = Stomp.client(url);
 
-    client.connect({}, function() {
+    client.connect({}, function () {
         client.subscribe("/topic/twitter.tweet",
-            function( message ) {
+            function (message) {
                 var row = Math.floor(Math.random() * rollers.length);
                 rollers[row].tweetQueue.push(JSON.parse(message.body));
             },
-            { priority: 9 }
+            {priority: 9}
+        );
+        client.subscribe("/topic/twitter.tweet.phrases",
+            function (message) {
+                msg = JSON.parse(message.body);
+                msg.phrases.forEach(function (entry) {
+                    phraseName = entry.phrase.replace(' ', '_');
+                    phraseSelector = '[name="' + phraseName + '"]';
+                    if ($(phraseSelector).length) {
+                        $(phraseSelector).contents().filter(function(){ return this.nodeType == 3; })
+                            .last().replaceWith(entry.freqMinute + ' ' + entry.phrase);
+                    } else {
+                        $("#phrases").append('<label name="' + phraseName + '" class="btn btn-switch"> \
+                        <input type="checkbox"> ' + entry.freqMinute + ' ' + entry.phrase + '</label>')
+                    }
+                })
+            },
+            {priority: 9}
         );
     });
 });
