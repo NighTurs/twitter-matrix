@@ -9,6 +9,8 @@ import com.github.nighturs.twittermatrix.Tweet;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import lombok.Data;
+import lombok.NonNull;
 
 import static com.github.nighturs.twittermatrix.topology.TweetProcessorTopology.TWEET_FIELD;
 
@@ -20,7 +22,7 @@ class TweetToJsonBolt extends BaseBasicBolt {
     @Override
     public void execute(Tuple input, BasicOutputCollector collector) {
         Tweet tweet = (Tweet) input.getValueByField(TWEET_FIELD);
-        String json = gson.toJson(new TweetView(tweet));
+        String json = gson.toJson(TweetView.of(tweet));
         collector.emit(Lists.newArrayList(json));
     }
 
@@ -29,15 +31,15 @@ class TweetToJsonBolt extends BaseBasicBolt {
         declarer.declare(new Fields(JSON_TWEET_FIELD));
     }
 
-    @SuppressWarnings("unused")
+    @Data
     private static class TweetView {
-
+        @NonNull
         private final String tweetUrl;
+        @NonNull
         private final String tweetText;
 
-        TweetView(Tweet tweet) {
-            tweetUrl = tweet.getUrl();
-            tweetText = tweet.getText();
+        private static TweetView of(Tweet tweet) {
+            return new TweetView(tweet.getUrl(), tweet.getText());
         }
     }
 }

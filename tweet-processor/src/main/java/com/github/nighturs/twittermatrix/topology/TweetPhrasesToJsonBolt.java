@@ -8,6 +8,8 @@ import backtype.storm.tuple.Tuple;
 import com.github.nighturs.twittermatrix.TweetPhrase;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import lombok.Data;
+import lombok.NonNull;
 
 import java.util.Collections;
 import java.util.List;
@@ -32,12 +34,10 @@ class TweetPhrasesToJsonBolt extends BaseBasicBolt {
         declarer.declare(new Fields(JSON_TWEET_PHRASES_FIELD));
     }
 
+    @Data
     private static class TweetPhrasesView {
 
+        @NonNull
         private final List<TweetPhrase> phrases;
-
-        TweetPhrasesView(List<TweetPhrase> phrases) {
-            this.phrases = phrases;
-        }
     }
 }

@@ -10,7 +10,7 @@ import java.time.ZoneOffset;
 final class TestUtils {
 
     private TestUtils() {
-        throw new RuntimeException("Instance not supported");
+        throw new UnsupportedOperationException("Instance not supported");
     }
 
     static TweetPhrase ph(String phrase) {
@@ -18,7 +18,7 @@ final class TestUtils {
     }
 
     static Tweet fakeTweet() {
-        return new Tweet(1234L, "dude", "some text");
+        return new Tweet(1234L, "dude", "some text", null);
     }
 
     static Clock fixedClock(int min, int sec) {

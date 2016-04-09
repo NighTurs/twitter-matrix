@@ -1,31 +1,14 @@
 package com.github.nighturs.twittermatrix;
 
-import com.google.common.base.MoreObjects;
+import lombok.Data;
+import lombok.NonNull;
 
 import java.util.List;
 
+@Data
 public class TwitterStreamParams {
+    @NonNull
     private final List<TweetPhrase> trackPhrases;
+    @NonNull
     private final List<String> languages;
-
-    public TwitterStreamParams(List<TweetPhrase> trackPhrases, List<String> languages) {
-        this.trackPhrases = trackPhrases;
-        this.languages = languages;
-    }
-
-    public List<TweetPhrase> getTrackPhrases() {
-        return trackPhrases;
-    }
-
-    public List<String> getLanguages() {
-        return languages;
-    }
-
-    @Override
-    public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .add("trackPhrases", trackPhrases)
-                .add("languages", languages)
-                .toString();
-    }
 }

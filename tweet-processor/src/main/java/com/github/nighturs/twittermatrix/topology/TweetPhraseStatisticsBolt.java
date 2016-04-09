@@ -55,7 +55,7 @@ class TweetPhraseStatisticsBolt extends BaseBasicBolt {
             if (matches == null) {
                 return x;
             } else {
-                return x.withStats(matches.size());
+                return x.withFreqMinute(matches.size());
             }
         }).collect(Collectors.toList());
     }

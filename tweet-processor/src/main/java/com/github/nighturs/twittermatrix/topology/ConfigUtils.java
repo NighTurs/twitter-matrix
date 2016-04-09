@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 final class ConfigUtils {
 
     private ConfigUtils() {
-        throw new RuntimeException("Instance not supported");
+        throw new UnsupportedOperationException("Instance not supported");
     }
 
     @SuppressWarnings("rawtypes")

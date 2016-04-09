@@ -6,6 +6,7 @@ import com.github.nighturs.twittermatrix.topology.TweetPhraseMatcherBolt.TrackPh
 import com.google.common.collect.*;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.Map;
 
 import static com.github.nighturs.twittermatrix.topology.TestUtils.ph;
@@ -17,16 +18,19 @@ public class TweetPhraseMatcherBoltTest {
     @Test
     public void testOnApiParamsUpdate() throws Exception {
         TweetPhraseMatcherBolt bolt = new TweetPhraseMatcherBolt();
-        bolt.onApiParamsUpdate(new TwitterStreamParams(Lists.newArrayList(ph("OneWord"), ph("Multiple Words")), null));
-        assertEquals(sharedTermsCountPerPhrase(), bolt.trackPhrases.get().termsCountPerPhrase);
-        assertEquals(sharedPhrasesPerTerm(), bolt.trackPhrases.get().phrasesPerTerm);
+        bolt.onApiParamsUpdate(new TwitterStreamParams(Lists.newArrayList(ph("OneWord"), ph("Multiple Words")),
+                Collections.emptyList()));
+        assertEquals(sharedTermsCountPerPhrase(), bolt.trackPhrases.get().getTermsCountPerPhrase());
+        assertEquals(sharedPhrasesPerTerm(), bolt.trackPhrases.get().getPhrasesPerTerm());
     }
 
     @Test
     public void testOnApiParamsUpdateExtraSpacesIgnored() throws Exception {
         TweetPhraseMatcherBolt bolt = new TweetPhraseMatcherBolt();
-        bolt.onApiParamsUpdate(new TwitterStreamParams(Lists.newArrayList(ph("   two    terms   ")), null));
-        assertEquals(Integer.valueOf(2), bolt.trackPhrases.get().termsCountPerPhrase.get(ph("   two    terms   ")));
+        bolt.onApiParamsUpdate(new TwitterStreamParams(Lists.newArrayList(ph("   two    terms   ")),
+                Collections.emptyList()));
+        assertEquals(Integer.valueOf(2),
+                bolt.trackPhrases.get().getTermsCountPerPhrase().get(ph("   two    terms   ")));
     }
 
     @Test
