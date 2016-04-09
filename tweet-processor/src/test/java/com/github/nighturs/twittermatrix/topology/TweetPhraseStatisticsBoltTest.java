@@ -25,6 +25,7 @@ public class TweetPhraseStatisticsBoltTest {
         assertThat(bolt.enrichWithStats(Lists.newArrayList(ph1, ph2)),
                 allOf(iterableWithSize(2), hasItem(ph1.withStats(2)), hasItem(ph2.withStats(1))));
         bolt.systemClock = fixedClock(9, 32);
-        assertThat(bolt.enrichWithStats(Lists.newArrayList(ph1, ph2)), iterableWithSize(0));
+        assertThat(bolt.enrichWithStats(Lists.newArrayList(ph1, ph2)),
+                allOf(iterableWithSize(2), hasItem(ph1.withStats(0)), hasItem(ph2.withStats(0))));
     }
 }

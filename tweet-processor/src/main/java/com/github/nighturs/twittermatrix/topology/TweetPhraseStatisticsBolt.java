@@ -37,7 +37,7 @@ class TweetPhraseStatisticsBolt extends BaseBasicBolt {
     }
 
     void updateMatchedPhrases(Tweet tweet) {
-        Instant now = Instant.now();
+        Instant now = Instant.now(systemClock);
         for (TweetPhrase phrase : tweet.getMatchedPhrases()) {
             if (!matchesByPhrase.containsKey(phrase)) {
                 matchesByPhrase.put(phrase, new LinkedList<>());
@@ -61,7 +61,7 @@ class TweetPhraseStatisticsBolt extends BaseBasicBolt {
     }
 
     private void removeOldData(LinkedList<Instant> instants) {
-        Instant minuteAgo = Instant.now().minus(Duration.ofMinutes(1));
+        Instant minuteAgo = Instant.now(systemClock).minus(Duration.ofMinutes(1));
         while (!instants.isEmpty() && instants.getFirst().isBefore(minuteAgo)) {
             instants.removeFirst();
         }
