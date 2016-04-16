@@ -38,6 +38,10 @@ $(document).ready(function () {
         })
     }
 
+    // Current tweet phrases
+    var phrases = new Map();
+    var filterPhrases = new Set();
+
     var ctxover = canvover.getContext('2d');
     var ctx = canv.getContext('2d');
     // black screen
@@ -142,16 +146,38 @@ $(document).ready(function () {
         return grid[gridI][gridH];
     }
 
-    phraseCheckboxIdPrefix = "cb_";
-    phrases = new Map();
+    function phraseId(phrase) {
+        return "cb_" + phrase.replace(' ', '_');
+    }
+
+    $(document).on('change', '[type=checkbox]', function (e) {
+        cb = $(e.target);
+        label = $(e.target).parent();
+        phrase = phrases.get(label.attr('id')).phrase;
+        if (!cb.is(':checked')) {
+            filterPhrases.add(phrase);
+            console.log('Added ' + phrase);
+        } else {
+            filterPhrases.delete(phrase);
+            console.log('Removed ' + phrase);
+        }
+    });
+
     url = "ws://" + location.hostname + ":61614/stomp";
     client = Stomp.client(url);
 
     client.connect({}, function () {
         client.subscribe("/topic/twitter.tweet",
             function (message) {
-                var row = Math.floor(Math.random() * rollers.length);
-                rollers[row].tweetQueue.push(JSON.parse(message.body));
+                tweet = JSON.parse(message.body);
+                filter = true;
+                tweet.phrases.forEach(function (entry) {
+                    filter &= filterPhrases.has(entry);
+                });
+                if (!filter) {
+                    var row = Math.floor(Math.random() * rollers.length);
+                    rollers[row].tweetQueue.push(tweet);
+                }
             },
             {priority: 9}
         );
@@ -160,7 +186,7 @@ $(document).ready(function () {
                 msg = JSON.parse(message.body);
                 curPhrases = new Map();
                 msg.phrases.forEach(function (entry) {
-                    key = phraseCheckboxIdPrefix + entry.phrase.replace(' ', '_');
+                    key = phraseId(entry.phrase);
                     curPhrases.set(key, {
                         phrase: entry.phrase,
                         freqMinute: entry.freqMinute
@@ -170,6 +196,7 @@ $(document).ready(function () {
                 phrases.forEach(function (value, key) {
                     if (!curPhrases.has(key)) {
                         $('#' + key).remove();
+                        filterPhrases.delete(value);
                     }
                 });
                 // and new phrases and update existing
@@ -181,8 +208,8 @@ $(document).ready(function () {
                             })
                             .last().replaceWith(value.freqMinute + ' ' + value.phrase);
                     } else {
-                        $("#phrases").append('<label id="' + key + '" class="btn btn-switch"> \
-                        <input type="checkbox"> ' + value.freqMinute + ' ' + value.phrase + '</label>')
+                        $("#phrases").append('<label id="' + key + '" class="btn btn-switch active"> \
+                        <input type="checkbox" checked> ' + value.freqMinute + ' ' + value.phrase + '</label>')
                     }
                 });
                 phrases = curPhrases;

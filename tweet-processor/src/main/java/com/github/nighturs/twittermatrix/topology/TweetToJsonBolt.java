@@ -6,11 +6,15 @@ import backtype.storm.topology.base.BaseBasicBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import com.github.nighturs.twittermatrix.Tweet;
+import com.github.nighturs.twittermatrix.TweetPhrase;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.Data;
 import lombok.NonNull;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.github.nighturs.twittermatrix.topology.TweetProcessorTopology.TWEET_FIELD;
 
@@ -33,13 +37,18 @@ class TweetToJsonBolt extends BaseBasicBolt {
 
     @Data
     private static class TweetView {
+
         @NonNull
         private final String tweetUrl;
         @NonNull
         private final String tweetText;
+        @NonNull
+        private final List<String> phrases;
 
         private static TweetView of(Tweet tweet) {
-            return new TweetView(tweet.getUrl(), tweet.getText());
+            return new TweetView(tweet.getUrl(),
+                    tweet.getText(),
+                    tweet.getMatchedPhrases().stream().map(TweetPhrase::getPhrase).collect(Collectors.toList()));
         }
     }
 }
