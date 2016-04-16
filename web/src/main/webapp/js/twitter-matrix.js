@@ -10,6 +10,7 @@
         var GRIDN = Math.floor((HEIGHT - CELL_HEIGHT) / CELL_HEIGHT);
         var GRIDM = Math.floor((WIDTH - CELL_WIDTH) / CELL_WIDTH) + 1;
         var WS_URL = "ws://" + location.hostname + ":61614/stomp";
+        var DRAW_INTERVAL = 33;
 
         // application state
         st = {
@@ -135,8 +136,25 @@
 
         };
 
+        // When tab is inactive intervals are triggered only once per second,
+        // so there is need to make up for missed calls
+        function smartInterval(func, interval){
+            var last = new Date() - interval;
+            var now;
+            var numMissed;
+
+            (function iterate(){
+                func();
+                now = +new Date();
+                numMissed = Math.round((now - last) / interval) - 1;
+                while (numMissed--) { func(); }
+                last = +new Date();
+                setTimeout(iterate, interval);
+            })();
+        }
+
         // run matrix animation
-        matrixInterval = setInterval(drawMatrix, 33);
+        matrixInterval = smartInterval(drawMatrix, DRAW_INTERVAL);
 
         // Upon tweet click open it's page
         canvover.addEventListener('click', function (e) {
