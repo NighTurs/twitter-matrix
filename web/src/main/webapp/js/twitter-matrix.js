@@ -142,6 +142,8 @@ $(document).ready(function () {
         return grid[gridI][gridH];
     }
 
+    phraseCheckboxIdPrefix = "cb_";
+    phrases = new Map();
     url = "ws://" + location.hostname + ":61614/stomp";
     client = Stomp.client(url);
 
@@ -156,17 +158,34 @@ $(document).ready(function () {
         client.subscribe("/topic/twitter.tweet.phrases",
             function (message) {
                 msg = JSON.parse(message.body);
+                curPhrases = new Map();
                 msg.phrases.forEach(function (entry) {
-                    phraseName = entry.phrase.replace(' ', '_');
-                    phraseSelector = '[name="' + phraseName + '"]';
-                    if ($(phraseSelector).length) {
-                        $(phraseSelector).contents().filter(function(){ return this.nodeType == 3; })
-                            .last().replaceWith(entry.freqMinute + ' ' + entry.phrase);
-                    } else {
-                        $("#phrases").append('<label name="' + phraseName + '" class="btn btn-switch"> \
-                        <input type="checkbox"> ' + entry.freqMinute + ' ' + entry.phrase + '</label>')
+                    key = phraseCheckboxIdPrefix + entry.phrase.replace(' ', '_');
+                    curPhrases.set(key, {
+                        phrase: entry.phrase,
+                        freqMinute: entry.freqMinute
+                    });
+                });
+                // remove phrases that disappeared
+                phrases.forEach(function (value, key) {
+                    if (!curPhrases.has(key)) {
+                        $('#' + key).remove();
                     }
-                })
+                });
+                // and new phrases and update existing
+                curPhrases.forEach(function (value, key) {
+                    phraseSelector = '#' + key;
+                    if ($(phraseSelector).length) {
+                        $(phraseSelector).contents().filter(function () {
+                                return this.nodeType == 3;
+                            })
+                            .last().replaceWith(value.freqMinute + ' ' + value.phrase);
+                    } else {
+                        $("#phrases").append('<label id="' + key + '" class="btn btn-switch"> \
+                        <input type="checkbox"> ' + value.freqMinute + ' ' + value.phrase + '</label>')
+                    }
+                });
+                phrases = curPhrases;
             },
             {priority: 9}
         );
