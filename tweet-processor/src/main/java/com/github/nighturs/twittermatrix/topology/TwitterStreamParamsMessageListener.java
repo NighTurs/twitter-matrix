@@ -1,6 +1,6 @@
 package com.github.nighturs.twittermatrix.topology;
 
-import com.github.nighturs.twittermatrix.ActiveMqConfig;
+import com.github.nighturs.twittermatrix.config.ActiveMqConfig;
 import com.github.nighturs.twittermatrix.TwitterStreamParams;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

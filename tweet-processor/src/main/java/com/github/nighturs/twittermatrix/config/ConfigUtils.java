@@ -1,4 +1,4 @@
-package com.github.nighturs.twittermatrix.topology;
+package com.github.nighturs.twittermatrix.config;
 
 import org.aeonbits.owner.Config;
 import org.aeonbits.owner.ConfigFactory;
@@ -6,14 +6,14 @@ import org.aeonbits.owner.ConfigFactory;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-final class ConfigUtils {
+public final class ConfigUtils {
 
     private ConfigUtils() {
         throw new UnsupportedOperationException("Instance not supported");
     }
 
     @SuppressWarnings("rawtypes")
-    static <T extends Config> T createFromStormConf(Class<? extends T> clazz, Map conf) {
+    public static <T extends Config> T createFromStormConf(Class<? extends T> clazz, Map conf) {
         //noinspection unchecked
         Map<String, String> nonNullValuesConf = ((Map<String, String>) conf).entrySet()
                 .stream()

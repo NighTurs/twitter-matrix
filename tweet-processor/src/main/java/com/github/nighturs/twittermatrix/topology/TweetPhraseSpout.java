@@ -5,7 +5,7 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
-import com.github.nighturs.twittermatrix.ActiveMqConfig;
+import com.github.nighturs.twittermatrix.config.ActiveMqConfig;
 import com.github.nighturs.twittermatrix.TweetPhrase;
 import com.github.nighturs.twittermatrix.TwitterStreamParams;
 import org.aeonbits.owner.ConfigFactory;

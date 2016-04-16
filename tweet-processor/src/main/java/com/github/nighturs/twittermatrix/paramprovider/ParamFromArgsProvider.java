@@ -1,6 +1,6 @@
 package com.github.nighturs.twittermatrix.paramprovider;
 
-import com.github.nighturs.twittermatrix.ActiveMqConfig;
+import com.github.nighturs.twittermatrix.config.ActiveMqConfig;
 import com.github.nighturs.twittermatrix.TweetPhrase;
 import com.github.nighturs.twittermatrix.TwitterStreamParams;
 import com.google.common.base.Splitter;

@@ -1,4 +1,4 @@
-package com.github.nighturs.twittermatrix;
+package com.github.nighturs.twittermatrix.config;
 
 import org.aeonbits.owner.Accessible;
 import org.aeonbits.owner.Config.Sources;
