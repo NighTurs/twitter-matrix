@@ -7,6 +7,7 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import com.github.nighturs.twittermatrix.domain.Tweet;
 import com.github.nighturs.twittermatrix.domain.TweetPhrase;
+import com.github.nighturs.twittermatrix.domain.TweetPhraseStats;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -53,9 +54,9 @@ class TweetPhraseStatisticsBolt extends BaseBasicBolt {
         return tweetPhrases.stream().map(x -> {
             LinkedList<Instant> matches = matchesByPhrase.get(x);
             if (matches == null) {
-                return x;
+                return x.withStats(new TweetPhraseStats(0));
             } else {
-                return x.withFreqMinute(matches.size());
+                return x.withStats(new TweetPhraseStats(matches.size()));
             }
         }).collect(Collectors.toList());
     }

@@ -10,9 +10,9 @@ public final class TweetPhrase {
 
     @NonNull
     private final String phrase;
-    private final int freqMinute;
+    private final TweetPhraseStats stats;
 
     public static TweetPhrase create(String phrase) {
-        return new TweetPhrase(phrase, 0);
+        return new TweetPhrase(phrase, null);
     }
 }

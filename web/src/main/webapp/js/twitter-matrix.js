@@ -147,7 +147,7 @@ $(document).ready(function () {
     }
 
     function phraseId(phrase) {
-        return "cb_" + phrase.replace(' ', '_');
+        return "cb_" + phrase.replace(new RegExp(' ', 'g'), '_');
     }
 
     $(document).on('change', '[type=checkbox]', function (e) {
@@ -189,7 +189,7 @@ $(document).ready(function () {
                     key = phraseId(entry.phrase);
                     curPhrases.set(key, {
                         phrase: entry.phrase,
-                        freqMinute: entry.freqMinute
+                        freqMinute: entry.stats.freqMinute
                     });
                 });
                 // remove phrases that disappeared
