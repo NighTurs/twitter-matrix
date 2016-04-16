@@ -1,32 +1,26 @@
-package com.github.nighturs.twittermatrix;
+package com.github.nighturs.twittermatrix.paramprovider;
 
-import com.google.common.base.Splitter;
+import com.github.nighturs.twittermatrix.ActiveMqConfig;
+import com.github.nighturs.twittermatrix.TwitterStreamParams;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.aeonbits.owner.ConfigFactory;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.command.ActiveMQTopic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.jms.*;
-import java.util.stream.Collectors;
 
-public final class TwitterStreamParamsEngine {
+final class ParamProviderUtils {
 
-    private TwitterStreamParamsEngine() {
+    private static final Logger logger = LoggerFactory.getLogger(ParamProviderUtils.class);
+    private static final Gson gson = new GsonBuilder().create();
+
+    private ParamProviderUtils() {
+        throw new UnsupportedOperationException("Instance not supported");
     }
 
-    public static void main(String[] args) {
-        if (args.length != 2) {
-            throw new IllegalArgumentException("Should be called with two arguments, languages and track phrases");
-        }
-        TwitterStreamParams streamParams = new TwitterStreamParams(Splitter.on(",")
-                .splitToList(args[1])
-                .stream()
-                .map(TweetPhrase::create)
-                .collect(Collectors.toList()), Splitter.on(",").splitToList(args[0]));
-        ActiveMqConfig activeMqConfig = ConfigFactory.create(ActiveMqConfig.class);
-        Gson gson = new GsonBuilder().create();
-
+    static void publishParams(ActiveMqConfig activeMqConfig, TwitterStreamParams streamParams) {
         try {
             ConnectionFactory cf = new ActiveMQConnectionFactory(activeMqConfig.activeMqUsername(),
                     activeMqConfig.activeMqPassword(),
@@ -36,6 +30,7 @@ public final class TwitterStreamParamsEngine {
             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             MessageProducer producer = session.createProducer(dest);
             producer.send(session.createTextMessage(gson.toJson(streamParams)));
+            logger.info("Sent stream parameters update, StreamParams={}", streamParams);
             session.close();
             connection.close();
         } catch (JMSException e) {
