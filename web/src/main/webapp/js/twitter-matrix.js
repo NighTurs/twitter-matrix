@@ -133,7 +133,6 @@
                     }
                 }
             }
-
         };
 
         // When tab is inactive intervals are triggered only once per second,
@@ -162,6 +161,10 @@
             if (tweetKey) {
                 window.open(st.shownTweets.get(tweetKey).url);
             }
+        });
+
+        canvover.addEventListener('mouseout', function () {
+            st.hoverTweetKey = null;
         });
 
         canvover.addEventListener('mousemove', function (e) {
