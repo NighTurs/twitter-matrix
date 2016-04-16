@@ -1,7 +1,7 @@
 package com.github.nighturs.twittermatrix.topology;
 
-import com.github.nighturs.twittermatrix.TweetPhrase;
-import com.github.nighturs.twittermatrix.TwitterStreamParams;
+import com.github.nighturs.twittermatrix.domain.TweetPhrase;
+import com.github.nighturs.twittermatrix.domain.TwitterStreamParams;
 import com.github.nighturs.twittermatrix.topology.TweetPhraseMatcherBolt.TrackPhrases;
 import com.google.common.collect.*;
 import org.junit.Test;

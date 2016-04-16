@@ -1,8 +1,8 @@
 package com.github.nighturs.twittermatrix.paramprovider;
 
 import com.github.nighturs.twittermatrix.config.ActiveMqConfig;
-import com.github.nighturs.twittermatrix.TweetPhrase;
-import com.github.nighturs.twittermatrix.TwitterStreamParams;
+import com.github.nighturs.twittermatrix.domain.TweetPhrase;
+import com.github.nighturs.twittermatrix.domain.TwitterStreamParams;
 import com.google.common.collect.Lists;
 import org.aeonbits.owner.ConfigFactory;
 import org.slf4j.Logger;

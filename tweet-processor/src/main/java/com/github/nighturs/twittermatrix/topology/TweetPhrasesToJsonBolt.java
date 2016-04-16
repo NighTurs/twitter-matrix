@@ -5,7 +5,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseBasicBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
-import com.github.nighturs.twittermatrix.TweetPhrase;
+import com.github.nighturs.twittermatrix.domain.TweetPhrase;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.Data;

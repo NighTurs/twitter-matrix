@@ -1,7 +1,7 @@
 package com.github.nighturs.twittermatrix.paramprovider;
 
 import com.github.nighturs.twittermatrix.config.ActiveMqConfig;
-import com.github.nighturs.twittermatrix.TwitterStreamParams;
+import com.github.nighturs.twittermatrix.domain.TwitterStreamParams;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.activemq.ActiveMQConnectionFactory;

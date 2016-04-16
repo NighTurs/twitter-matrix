@@ -5,8 +5,8 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseBasicBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
-import com.github.nighturs.twittermatrix.Tweet;
-import com.github.nighturs.twittermatrix.TweetPhrase;
+import com.github.nighturs.twittermatrix.domain.Tweet;
+import com.github.nighturs.twittermatrix.domain.TweetPhrase;
 
 import java.time.Clock;
 import java.time.Duration;

@@ -1,5 +1,6 @@
-package com.github.nighturs.twittermatrix;
+package com.github.nighturs.twittermatrix.domain;
 
+import com.github.nighturs.twittermatrix.domain.TweetPhrase;
 import lombok.Data;
 import lombok.NonNull;
 

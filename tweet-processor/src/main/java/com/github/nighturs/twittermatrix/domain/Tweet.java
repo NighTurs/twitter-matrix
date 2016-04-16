@@ -1,4 +1,4 @@
-package com.github.nighturs.twittermatrix;
+package com.github.nighturs.twittermatrix.domain;
 
 import lombok.Data;
 import lombok.NonNull;

@@ -5,8 +5,8 @@ import backtype.storm.LocalCluster;
 import backtype.storm.contrib.jms.bolt.JmsBolt;
 import backtype.storm.topology.TopologyBuilder;
 import com.github.nighturs.twittermatrix.config.ActiveMqConfig;
-import com.github.nighturs.twittermatrix.Tweet;
-import com.github.nighturs.twittermatrix.TweetPhrase;
+import com.github.nighturs.twittermatrix.domain.Tweet;
+import com.github.nighturs.twittermatrix.domain.TweetPhrase;
 import com.github.nighturs.twittermatrix.config.TwitterApiConfig;
 import org.aeonbits.owner.ConfigFactory;
 

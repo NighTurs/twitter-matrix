@@ -1,7 +1,7 @@
 package com.github.nighturs.twittermatrix.topology;
 
-import com.github.nighturs.twittermatrix.Tweet;
-import com.github.nighturs.twittermatrix.TweetPhrase;
+import com.github.nighturs.twittermatrix.domain.Tweet;
+import com.github.nighturs.twittermatrix.domain.TweetPhrase;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
