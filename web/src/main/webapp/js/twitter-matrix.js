@@ -180,9 +180,9 @@
 
         // Upon tweet click open it's page
         canvover.addEventListener('click', function (e) {
-            tweetKey = mouseEventToGridCell(this, e).tweetKey;
-            if (tweetKey) {
-                window.open(st.shownTweets.get(tweetKey).url);
+            var cell = mouseEventToGridCell(this, e);
+            if (cell && cell.tweetKey) {
+                window.open(st.shownTweets.get(cell.tweetKey).url);
             }
         });
 
@@ -191,7 +191,8 @@
         });
 
         canvover.addEventListener('mousemove', function (e) {
-            st.hoverTweetKey = mouseEventToGridCell(this, e).tweetKey;
+            var cell = mouseEventToGridCell(this, e);
+            st.hoverTweetKey = cell ? cell.tweetKey : null;
         });
 
         function mouseEventToGridCell(ref, e) {
@@ -199,7 +200,11 @@
             var clickedY = e.pageY - ref.offsetTop;
             var gridI = Math.floor(clickedY / CELL_HEIGHT);
             var gridH = Math.floor(clickedX / CELL_WIDTH);
-            return st.grid[gridI][gridH];
+            if (gridI < st.gridn && gridH < st.gridm) {
+                return st.grid[gridI][gridH];
+            } else {
+                return null;
+            }
         }
 
         function phraseId(phrase) {
