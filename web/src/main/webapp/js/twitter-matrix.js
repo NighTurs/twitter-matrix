@@ -1,15 +1,19 @@
 (function () {
     $(document).ready(function () {
-        var CELL_HEIGHT = 10;
-        var CELL_WIDTH = 10;
+        var MAX_TWEET_LENGTH = 140;
+        var CELL_SIZE_MIN = 5;
+        var CELL_SIZE_MAX = 10;
         var BCOLOR = '#000';
         var NEW_CHAR_COLOR = '#0F0';
-        var FONT = '10pt Courier New';
+        var FONT = 'Courier New';
         var WS_URL = "ws://" + location.hostname + ":61614/stomp";
         var DRAW_INTERVAL = 33;
 
         // application state
         st = {
+            cellHeight: null,
+            cellWidth: null,
+            font: FONT,
             width: 0,
             height: 0,
             gridn: 0,
@@ -39,7 +43,7 @@
             ctx.fillStyle = 'rgba(0,0,0,.01)';
             ctx.fillRect(0, 0, st.width, st.height);
             // setup to type new characters
-            ctx.font = FONT;
+            ctx.font = st.font;
 
             // each roller will type new character
             for (i = 0; i < st.gridn; i++) {
@@ -50,7 +54,7 @@
                     var topTweetText = topTweet.tweetText;
                     var topTweetKey = topTweet.tweetUrl;
                     ctx.fillStyle = BCOLOR;
-                    ctx.fillRect(cell.x, cell.y - CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT);
+                    ctx.fillRect(cell.x, cell.y - st.cellHeight, st.cellWidth, st.cellHeight);
                     ctx.fillStyle = NEW_CHAR_COLOR;
                     ctx.fillText(topTweetText[roller.curTweetPos], cell.x, cell.y);
 
@@ -94,14 +98,14 @@
 
             // highlight hovered tweet
             ctxover.clearRect(0, 0, st.width, st.height);
-            ctxover.font = FONT;
+            ctxover.font = st.font;
             if (st.hoverTweetKey && st.shownTweets.has(st.hoverTweetKey)) {
                 tweetInfo = st.shownTweets.get(st.hoverTweetKey);
                 gi = tweetInfo.stGridI;
                 gh = tweetInfo.stGridH;
                 for (i = 0; i <= tweetInfo.textOffset; i++) {
                     cell = st.grid[gi][gh];
-                    ctxover.clearRect(cell.x, cell.y - CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT);
+                    ctxover.clearRect(cell.x, cell.y - st.cellHeight, st.cellWidth, st.cellHeight);
                     ctxover.fillStyle = '#FFF';
                     ctxover.fillText(tweetInfo.text[i], cell.x, cell.y);
                     gh++;
@@ -114,16 +118,18 @@
 
         // When tab is inactive intervals are triggered only once per second,
         // so there is need to make up for missed calls
-        function smartInterval(func, interval){
+        function smartInterval(func, interval) {
             var last = new Date() - interval;
             var now;
             var numMissed;
 
-            (function iterate(){
+            (function iterate() {
                 func();
                 now = +new Date();
                 numMissed = Math.round((now - last) / interval) - 1;
-                while (numMissed--) { func(); }
+                while (numMissed--) {
+                    func();
+                }
                 last = +new Date();
                 setTimeout(iterate, interval);
             })();
@@ -138,8 +144,16 @@
             //adjust canvas size
             st.width = canv.width = canvover.width = window.innerWidth;
             st.height = canv.height = canvover.height = window.innerHeight;
-            st.gridn = Math.floor((st.height - CELL_HEIGHT) / CELL_HEIGHT);
-            st.gridm = Math.floor((st.width - CELL_WIDTH) / CELL_WIDTH) + 1;
+
+            // pick cell width and font to tweets without overlapping
+            st.cellWidth = Math.min(Math.max(
+                Math.floor(st.width / MAX_TWEET_LENGTH, CELL_SIZE_MIN)), CELL_SIZE_MAX);
+            //noinspection JSSuspiciousNameCombination
+            st.cellHeight = st.cellWidth;
+            st.font = Math.floor(st.cellWidth * 1.5) + 'px ' + FONT;
+
+            st.gridn = Math.floor((st.height - st.cellHeight) / st.cellHeight);
+            st.gridm = Math.floor((st.width - st.cellWidth) / st.cellWidth) + 1;
 
             // black background
             ctx.fillStyle = BCOLOR;
@@ -152,9 +166,9 @@
 
             //reinitialize grid
             st.grid = [];
-            for (i = CELL_HEIGHT; i <= st.height - CELL_HEIGHT; i += CELL_HEIGHT) {
+            for (i = st.cellHeight; i <= st.height - st.cellHeight; i += st.cellHeight) {
                 var row = [];
-                for (h = 0; h <= st.width - CELL_WIDTH; h += CELL_WIDTH) {
+                for (h = 0; h <= st.width - st.cellWidth; h += st.cellWidth) {
                     row.push({
                         x: h,
                         y: i,
@@ -198,8 +212,8 @@
         function mouseEventToGridCell(ref, e) {
             var clickedX = e.pageX - ref.offsetLeft;
             var clickedY = e.pageY - ref.offsetTop;
-            var gridI = Math.floor(clickedY / CELL_HEIGHT);
-            var gridH = Math.floor(clickedX / CELL_WIDTH);
+            var gridI = Math.floor(clickedY / st.cellHeight);
+            var gridH = Math.floor(clickedX / st.cellWidth);
             if (gridI < st.gridn && gridH < st.gridm) {
                 return st.grid[gridI][gridH];
             } else {
