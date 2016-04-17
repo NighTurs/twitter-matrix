@@ -227,6 +227,7 @@
         });
 
         client = Stomp.client(WS_URL);
+        client.debug = null;
 
         client.connect({}, function () {
             client.subscribe("/topic/twitter.tweet",
