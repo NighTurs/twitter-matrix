@@ -3,6 +3,7 @@
         var MAX_TWEET_LENGTH = 140;
         var CELL_SIZE_MIN = 5;
         var CELL_SIZE_MAX = 10;
+        var MAX_PENDING_TWEETS = 200;
         var BCOLOR = '#000';
         var NEW_CHAR_COLOR = '#0F0';
         var FONT = 'Courier New';
@@ -29,7 +30,8 @@
             // Tweet phrases by id
             phrases: new Map(),
             // Set of phrases to filter out
-            filterPhrases: new Set()
+            filterPhrases: new Set(),
+            pendingTweets: []
         };
 
         var ctxover = canvover.getContext('2d');
@@ -39,6 +41,8 @@
         adjustToNewWindowSize();
 
         var drawMatrix = function () {
+            distributePendingTweets();
+
             // shade for older text
             ctx.fillStyle = 'rgba(0,0,0,.01)';
             ctx.fillRect(0, 0, st.width, st.height);
@@ -115,6 +119,35 @@
                 }
             }
         };
+
+        function distributePendingTweets() {
+            var i;
+            var vacantRollers = [];
+            var tweetInfo;
+            if (st.pendingTweets.length == 0) {
+                return;
+            }
+            for (i = 0; i < st.rollers.length; i++) {
+                if (st.rollers[i].tweetQueue.length == 0) {
+                    vacantRollers.push(i);
+                }
+            }
+            // shuffle vacant rollers
+            for (i = vacantRollers.length; i; i -= 1) {
+                j = Math.floor(Math.random() * i);
+                x = vacantRollers[i - 1];
+                vacantRollers[i - 1] = vacantRollers[j];
+                vacantRollers[j] = x;
+            }
+            while (vacantRollers.length > 0 && st.pendingTweets.length > 0) {
+                tweetInfo = st.pendingTweets.pop();
+                st.rollers[vacantRollers.pop()].tweetQueue.push(tweetInfo);
+            }
+            // remove excess of pending tweets
+            if (st.pendingTweets.length > MAX_PENDING_TWEETS) {
+                st.pendingTweets = st.pendingTweets.slice(-(MAX_PENDING_TWEETS >> 1))
+            }
+        }
 
         // When tab is inactive intervals are triggered only once per second,
         // so there is need to make up for missed calls
@@ -252,8 +285,7 @@
                         filter &= st.filterPhrases.has(entry);
                     });
                     if (!filter) {
-                        var row = Math.floor(Math.random() * st.rollers.length);
-                        st.rollers[row].tweetQueue.push(tweet);
+                        st.pendingTweets.push(tweet);
                     }
                 },
                 {priority: 9}
