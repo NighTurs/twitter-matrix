@@ -39,14 +39,17 @@ class TweetToJsonBolt extends BaseBasicBolt {
     private static class TweetView {
 
         @NonNull
-        private final String tweetUrl;
+        private final Long id;
         @NonNull
-        private final String tweetText;
+        private final String url;
+        @NonNull
+        private final String text;
         @NonNull
         private final List<String> phrases;
 
         private static TweetView of(Tweet tweet) {
-            return new TweetView(tweet.getUrl(),
+            return new TweetView(tweet.getId(),
+                    tweet.getUrl(),
                     tweet.getText(),
                     tweet.getMatchedPhrases().stream().map(TweetPhrase::getPhrase).collect(Collectors.toList()));
         }

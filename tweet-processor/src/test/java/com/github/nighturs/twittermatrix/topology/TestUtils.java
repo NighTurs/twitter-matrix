@@ -18,7 +18,7 @@ final class TestUtils {
     }
 
     static Tweet fakeTweet() {
-        return new Tweet(1234L, "dude", "some text", null);
+        return new Tweet(1234L, 4321L, "dude", "some text", null);
     }
 
     static Clock fixedClock(int min, int sec) {

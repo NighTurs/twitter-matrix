@@ -51,8 +51,8 @@
                 if (roller.tweetQueue.length > 0) {
                     var cell = st.grid[i][roller.cellInd];
                     var topTweet = roller.tweetQueue[0];
-                    var topTweetText = topTweet.tweetText;
-                    var topTweetKey = topTweet.tweetUrl;
+                    var topTweetText = topTweet.text;
+                    var topTweetKey = topTweet.id;
                     ctx.fillStyle = BCOLOR;
                     ctx.fillRect(cell.x, cell.y - st.cellHeight, st.cellWidth, st.cellHeight);
                     ctx.fillStyle = NEW_CHAR_COLOR;
@@ -77,7 +77,7 @@
                         st.shownTweets.set(topTweetKey, {
                             stGridI: i,
                             stGridH: roller.cellInd,
-                            url: topTweet.tweetUrl,
+                            url: topTweet.url,
                             text: topTweetText,
                             textOffset: roller.curTweetPos,
                             count: 1
