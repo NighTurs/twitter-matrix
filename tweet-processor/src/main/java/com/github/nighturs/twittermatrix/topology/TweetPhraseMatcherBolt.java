@@ -7,10 +7,10 @@ import backtype.storm.topology.base.BaseBasicBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import com.github.nighturs.twittermatrix.config.ActiveMqConfig;
+import com.github.nighturs.twittermatrix.config.ConfigUtils;
 import com.github.nighturs.twittermatrix.domain.Tweet;
 import com.github.nighturs.twittermatrix.domain.TweetPhrase;
 import com.github.nighturs.twittermatrix.domain.TwitterStreamParams;
-import com.github.nighturs.twittermatrix.config.ConfigUtils;
 import com.google.common.base.Splitter;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -38,6 +38,7 @@ class TweetPhraseMatcherBolt extends BaseBasicBolt {
     @Override
     public void prepare(Map stormConf, TopologyContext context) {
         super.prepare(stormConf, context);
+        trackPhrases.set(new TrackPhrases(new HashMap<>(), HashMultimap.create()));
         ActiveMqConfig activeMqConfig = ConfigUtils.createFromStormConf(ActiveMqConfig.class, stormConf);
         paramsMessageListener = new TwitterStreamParamsMessageListener(this::onApiParamsUpdate);
         paramsMessageListener.listenStreamParamChanges(activeMqConfig);
