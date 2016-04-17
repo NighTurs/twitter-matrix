@@ -185,7 +185,7 @@
             st.cellHeight = st.cellWidth;
             st.font = Math.floor(st.cellWidth * 1.5) + 'px ' + FONT;
 
-            st.gridn = Math.floor((st.height - st.cellHeight) / st.cellHeight);
+            st.gridn = Math.floor((st.height - st.cellHeight) / st.cellHeight) + 1;
             st.gridm = Math.floor((st.width - st.cellWidth) / st.cellWidth) + 1;
 
             // black background
@@ -199,7 +199,7 @@
 
             //reinitialize grid
             st.grid = [];
-            for (i = st.cellHeight; i <= st.height - st.cellHeight; i += st.cellHeight) {
+            for (i = st.cellHeight; i <= st.height; i += st.cellHeight) {
                 var row = [];
                 for (h = 0; h <= st.width - st.cellWidth; h += st.cellWidth) {
                     row.push({
