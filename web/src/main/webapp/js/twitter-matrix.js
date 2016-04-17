@@ -5,15 +5,15 @@
         var BCOLOR = '#000';
         var NEW_CHAR_COLOR = '#0F0';
         var FONT = '10pt Courier New';
-        var WIDTH = canv.width = canvover.width = window.innerWidth;
-        var HEIGHT = canv.height = canvover.height = window.innerHeight;
-        var GRIDN = Math.floor((HEIGHT - CELL_HEIGHT) / CELL_HEIGHT);
-        var GRIDM = Math.floor((WIDTH - CELL_WIDTH) / CELL_WIDTH) + 1;
         var WS_URL = "ws://" + location.hostname + ":61614/stomp";
         var DRAW_INTERVAL = 33;
 
         // application state
         st = {
+            width: 0,
+            height: 0,
+            gridn: 0,
+            gridm: 0,
             // Container of matrix cells with references to currently displayed tweets
             grid: [],
             // Displayed tweets by key
@@ -28,44 +28,21 @@
             filterPhrases: new Set()
         };
 
-        // initialize app state
-        (function () {
-            for (i = CELL_HEIGHT; i <= HEIGHT - CELL_HEIGHT; i += CELL_HEIGHT) {
-                var row = [];
-                for (h = 0; h <= WIDTH - CELL_WIDTH; h += CELL_WIDTH) {
-                    row.push({
-                        x: h,
-                        y: i,
-                        tweetKey: null
-                    })
-                }
-                st.grid.push(row);
-            }
-
-            for (i = 0; i < GRIDN; i++) {
-                st.rollers.push({
-                    tweetQueue: [],
-                    curTweetPos: 0,
-                    cellInd: 0
-                })
-            }
-        })();
-
         var ctxover = canvover.getContext('2d');
         var ctx = canv.getContext('2d');
-        // black screen
-        ctx.fillStyle = BCOLOR;
-        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+        // initialize app state
+        adjustToNewWindowSize();
 
         var drawMatrix = function () {
             // shade for older text
             ctx.fillStyle = 'rgba(0,0,0,.01)';
-            ctx.fillRect(0, 0, WIDTH, HEIGHT);
+            ctx.fillRect(0, 0, st.width, st.height);
             // setup to type new characters
             ctx.font = FONT;
 
             // each roller will type new character
-            for (i = 0; i < GRIDN; i++) {
+            for (i = 0; i < st.gridn; i++) {
                 roller = st.rollers[i];
                 if (roller.tweetQueue.length > 0) {
                     var cell = st.grid[i][roller.cellInd];
@@ -109,16 +86,16 @@
                         roller.tweetQueue.shift();
                     }
                     roller.cellInd++;
-                    if (roller.cellInd >= GRIDM) {
+                    if (roller.cellInd >= st.gridm) {
                         roller.cellInd = 0;
                     }
                 }
             }
 
             // highlight hovered tweet
-            ctxover.clearRect(0, 0, WIDTH, HEIGHT);
+            ctxover.clearRect(0, 0, st.width, st.height);
             ctxover.font = FONT;
-            if (st.hoverTweetKey) {
+            if (st.hoverTweetKey && st.shownTweets.has(st.hoverTweetKey)) {
                 tweetInfo = st.shownTweets.get(st.hoverTweetKey);
                 gi = tweetInfo.stGridI;
                 gh = tweetInfo.stGridH;
@@ -128,7 +105,7 @@
                     ctxover.fillStyle = '#FFF';
                     ctxover.fillText(tweetInfo.text[i], cell.x, cell.y);
                     gh++;
-                    if (gh >= GRIDM) {
+                    if (gh >= st.gridm) {
                         gh = 0;
                     }
                 }
@@ -153,7 +130,53 @@
         }
 
         // run matrix animation
-        matrixInterval = smartInterval(drawMatrix, DRAW_INTERVAL);
+        smartInterval(drawMatrix, DRAW_INTERVAL);
+
+        function adjustToNewWindowSize() {
+            var i, h;
+
+            //adjust canvas size
+            st.width = canv.width = canvover.width = window.innerWidth;
+            st.height = canv.height = canvover.height = window.innerHeight;
+            st.gridn = Math.floor((st.height - CELL_HEIGHT) / CELL_HEIGHT);
+            st.gridm = Math.floor((st.width - CELL_WIDTH) / CELL_WIDTH) + 1;
+
+            // black background
+            ctx.fillStyle = BCOLOR;
+            ctx.fillRect(0, 0, st.width, st.height);
+            // transparent second layer
+            ctxover.clearRect(0, 0, st.width, st.height);
+
+            //reset hovered tweet
+            st.hoverTweetKey = null;
+
+            //reinitialize grid
+            st.grid = [];
+            for (i = CELL_HEIGHT; i <= st.height - CELL_HEIGHT; i += CELL_HEIGHT) {
+                var row = [];
+                for (h = 0; h <= st.width - CELL_WIDTH; h += CELL_WIDTH) {
+                    row.push({
+                        x: h,
+                        y: i,
+                        tweetKey: null
+                    })
+                }
+                st.grid.push(row);
+            }
+
+            // reinitialize rollers
+            st.rollers = [];
+            for (i = 0; i < st.gridn; i++) {
+                st.rollers.push({
+                    tweetQueue: [],
+                    curTweetPos: 0,
+                    cellInd: 0
+                })
+            }
+
+            // reinitialize shown tweets map
+            shownTweets = new Map();
+        }
 
         // Upon tweet click open it's page
         canvover.addEventListener('click', function (e) {
@@ -194,6 +217,9 @@
             }
         });
 
+        $(window).resize(function () {
+            adjustToNewWindowSize()
+        });
 
         client = Stomp.client(WS_URL);
 
