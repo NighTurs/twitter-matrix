@@ -180,7 +180,7 @@
 
             // pick cell width and font to tweets without overlapping
             st.cellWidth = Math.min(Math.max(
-                Math.floor(st.width / MAX_TWEET_LENGTH, CELL_SIZE_MIN)), CELL_SIZE_MAX);
+                Math.floor(st.width / MAX_TWEET_LENGTH), CELL_SIZE_MIN), CELL_SIZE_MAX);
             //noinspection JSSuspiciousNameCombination
             st.cellHeight = st.cellWidth;
             st.font = Math.floor(st.cellWidth * 1.5) + 'px ' + FONT;
