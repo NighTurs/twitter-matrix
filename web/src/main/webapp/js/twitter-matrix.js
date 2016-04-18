@@ -137,12 +137,26 @@
             // introduce random delay before new tweet is assigned to vacant roller
             var coinFlip = Math.floor(Math.random() * vacantRollers.length * 1.5);
             if (coinFlip < vacantRollers.length) {
-                st.rollers[vacantRollers[coinFlip]].tweetQueue.push(st.pendingTweets.pop());
+                // filter out tweets
+                while (st.pendingTweets.length > 0 && filterTweet(st.pendingTweets[st.pendingTweets.length - 1])) {
+                    st.pendingTweets.pop();
+                }
+                if (st.pendingTweets.length > 0) {
+                    st.rollers[vacantRollers[coinFlip]].tweetQueue.push(st.pendingTweets.pop());
+                }
             }
             // remove excess of pending tweets
             if (st.pendingTweets.length > MAX_PENDING_TWEETS) {
                 st.pendingTweets = st.pendingTweets.slice(-(MAX_PENDING_TWEETS >> 1))
             }
+        }
+
+        function filterTweet(tweet) {
+            var filter = true;
+            tweet.phrases.forEach(function (entry) {
+                filter &= st.filterPhrases.has(entry);
+            });
+            return filter;
         }
 
         // When tab is inactive intervals are triggered only once per second,
@@ -276,11 +290,7 @@
             client.subscribe("/topic/twitter.tweet",
                 function (message) {
                     var tweet = JSON.parse(message.body);
-                    var filter = true;
-                    tweet.phrases.forEach(function (entry) {
-                        filter &= st.filterPhrases.has(entry);
-                    });
-                    if (!filter) {
+                    if (!filterTweet(tweet)) {
                         st.pendingTweets.push(tweet);
                     }
                 },
