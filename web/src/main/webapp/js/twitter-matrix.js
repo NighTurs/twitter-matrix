@@ -1,4 +1,5 @@
 (function () {
+    "use strict";
     $(document).ready(function () {
         var MAX_TWEET_LENGTH = 140;
         var CELL_SIZE_MIN = 5;
@@ -11,7 +12,7 @@
         var DRAW_INTERVAL = 33;
 
         // application state
-        st = {
+        var st = {
             cellHeight: null,
             cellWidth: null,
             font: FONT,
@@ -50,8 +51,8 @@
             ctx.font = st.font;
 
             // each roller will type new character
-            for (i = 0; i < st.gridn; i++) {
-                roller = st.rollers[i];
+            for (var i = 0; i < st.gridn; i++) {
+                var roller = st.rollers[i];
                 if (roller.tweetQueue.length > 0) {
                     var cell = st.grid[i][roller.cellInd];
                     var topTweet = roller.tweetQueue[0];
@@ -62,6 +63,7 @@
                     ctx.fillStyle = NEW_CHAR_COLOR;
                     ctx.fillText(topTweetText[roller.curTweetPos], cell.x, cell.y);
 
+                    var tweetInfo;
                     // cell will no longer reference previous tweet
                     if (cell.tweetKey) {
                         tweetInfo = st.shownTweets.get(cell.tweetKey);
@@ -105,8 +107,8 @@
             ctxover.font = st.font;
             if (st.hoverTweetKey && st.shownTweets.has(st.hoverTweetKey)) {
                 tweetInfo = st.shownTweets.get(st.hoverTweetKey);
-                gi = tweetInfo.stGridI;
-                gh = tweetInfo.stGridH;
+                var gi = tweetInfo.stGridI;
+                var gh = tweetInfo.stGridH;
                 for (i = 0; i <= tweetInfo.textOffset; i++) {
                     cell = st.grid[gi][gh];
                     ctxover.clearRect(cell.x, cell.y - st.cellHeight, st.cellWidth, st.cellHeight);
@@ -216,7 +218,7 @@
             }
 
             // reinitialize shown tweets map
-            shownTweets = new Map();
+            st.shownTweets = new Map();
         }
 
         // Upon tweet click open it's page
@@ -253,9 +255,9 @@
         }
 
         $(document).on('change', '[type=checkbox]', function (e) {
-            cb = $(e.target);
-            label = $(e.target).parent();
-            phrase = st.phrases.get(label.attr('id')).phrase;
+            var cb = $(e.target);
+            var label = $(e.target).parent();
+            var phrase = st.phrases.get(label.attr('id')).phrase;
             if (!cb.is(':checked')) {
                 st.filterPhrases.add(phrase);
             } else {
@@ -267,14 +269,14 @@
             adjustToNewWindowSize()
         });
 
-        client = Stomp.client(WS_URL);
+        var client = Stomp.client(WS_URL);
         client.debug = null;
 
         client.connect({}, function () {
             client.subscribe("/topic/twitter.tweet",
                 function (message) {
-                    tweet = JSON.parse(message.body);
-                    filter = true;
+                    var tweet = JSON.parse(message.body);
+                    var filter = true;
                     tweet.phrases.forEach(function (entry) {
                         filter &= st.filterPhrases.has(entry);
                     });
@@ -286,10 +288,10 @@
             );
             client.subscribe("/topic/twitter.tweet.phrases",
                 function (message) {
-                    msg = JSON.parse(message.body);
-                    curPhrases = new Map();
+                    var msg = JSON.parse(message.body);
+                    var curPhrases = new Map();
                     msg.phrases.forEach(function (entry) {
-                        key = phraseId(entry.phrase);
+                        var key = phraseId(entry.phrase);
                         curPhrases.set(key, {
                             phrase: entry.phrase,
                             freqMinute: entry.stats.freqMinute
@@ -304,7 +306,7 @@
                     });
                     // and new phrases and update existing
                     curPhrases.forEach(function (value, key) {
-                        phraseSelector = '#' + key;
+                        var phraseSelector = '#' + key;
                         if ($(phraseSelector).length) {
                             $(phraseSelector).contents().filter(function () {
                                     return this.nodeType == 3;
