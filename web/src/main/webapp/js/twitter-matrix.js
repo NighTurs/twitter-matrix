@@ -123,7 +123,6 @@
         function distributePendingTweets() {
             var i;
             var vacantRollers = [];
-            var tweetInfo;
             if (st.pendingTweets.length == 0) {
                 return;
             }
@@ -132,16 +131,11 @@
                     vacantRollers.push(i);
                 }
             }
-            // shuffle vacant rollers
-            for (i = vacantRollers.length; i; i -= 1) {
-                j = Math.floor(Math.random() * i);
-                x = vacantRollers[i - 1];
-                vacantRollers[i - 1] = vacantRollers[j];
-                vacantRollers[j] = x;
-            }
-            while (vacantRollers.length > 0 && st.pendingTweets.length > 0) {
-                tweetInfo = st.pendingTweets.pop();
-                st.rollers[vacantRollers.pop()].tweetQueue.push(tweetInfo);
+            // to avoid rollers moving in static pattern under high load
+            // introduce random delay before new tweet is assigned to vacant roller
+            var coinFlip = Math.floor(Math.random() * vacantRollers.length * 1.5);
+            if (coinFlip < vacantRollers.length) {
+                st.rollers[vacantRollers[coinFlip]].tweetQueue.push(st.pendingTweets.pop());
             }
             // remove excess of pending tweets
             if (st.pendingTweets.length > MAX_PENDING_TWEETS) {
