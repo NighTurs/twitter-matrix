@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <Appenders>
+        <File name="paramProviderFile" fileName="logs/param_provider_log.txt">
+            <PatternLayout>
+                <Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] %-5level [%t] --- %c{1}: %msg%n</Pattern>
+            </PatternLayout>
+        </File>
+        <RollingFile name="stormFile" fileName="logs/storm_log.txt" filePattern="logs/storm_log_%d{yyyyMMdd}-%i.txt.gz">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss.SSS}] %-5level [%t] --- %c{1}: %msg%n"/>
+            <Policies>
+                <OnStartupTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="500 MB"/>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+            <DefaultRolloverStrategy max="100"/>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Logger name="org.apache.zookeeper" level="WARN"/>
+        <Logger name="com.github.nighturs.twittermatrix.paramprovider" level="DEBUG" additivity="false">
+            <AppenderRef ref="paramProviderFile"/>
+        </Logger>
+        <Root level="info">
+            <AppenderRef ref="stormFile"/>
+        </Root>
+    </Loggers>
+</configuration>
+

@@ -51,7 +51,7 @@ class TweetPhraseMatcherBolt extends BaseBasicBolt {
         if (matchedPhrases.isEmpty()) {
             logger.warn("No phrases matched, Tweet={}", tweet);
         } else {
-            logger.info("Matched phrases, Tweet={}, Phrases={}", tweet, matchedPhrases);
+            logger.debug("Matched phrases, Tweet={}, Phrases={}", tweet, matchedPhrases);
         }
         collector.emit(Lists.newArrayList(tweet.withMatchedPhrases(matchedPhrases)));
     }

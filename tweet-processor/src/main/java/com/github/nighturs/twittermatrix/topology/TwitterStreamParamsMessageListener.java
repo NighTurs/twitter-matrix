@@ -40,7 +40,7 @@ class TwitterStreamParamsMessageListener implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
-        logger.info("Received stream param message, Message={}", message);
+        logger.debug("Received stream param message, Message={}", message);
         try {
             String json = ((TextMessage) message).getText();
             TwitterStreamParams params = gson.fromJson(json, TwitterStreamParams.class);
