@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -39,21 +38,22 @@ public final class ParamFromCsvUrlProvider {
     }
 
     private static void updateParamsWithChanges(URL csvUrl, ActiveMqConfig activeMqConfig) {
-        List<TweetPhrase> phrases = new ArrayList<>();
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(csvUrl.openStream()))) {
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                phrases.add(TweetPhrase.create(inputLine));
+        try {
+            List<TweetPhrase> phrases = new ArrayList<>();
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(csvUrl.openStream()))) {
+                String inputLine;
+                while ((inputLine = in.readLine()) != null) {
+                    phrases.add(TweetPhrase.create(inputLine));
+                }
+                logger.info("Got phrases, Phrases={}", phrases);
             }
-            logger.info("Got phrases, Phrases={}", phrases);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        if (curPhrases.get() == null || !curPhrases.get().equals(phrases)) {
-            TwitterStreamParams streamParams = new TwitterStreamParams(phrases, Lists.newArrayList("en", "ru"));
-            ParamProviderUtils.publishParams(activeMqConfig, streamParams);
-            curPhrases.set(phrases);
+            if (curPhrases.get() == null || !curPhrases.get().equals(phrases)) {
+                TwitterStreamParams streamParams = new TwitterStreamParams(phrases, Lists.newArrayList("en", "ru"));
+                ParamProviderUtils.publishParams(activeMqConfig, streamParams);
+                curPhrases.set(phrases);
+            }
+        }  catch (Exception e) {
+            logger.error("Failed to get or publish phrases", e);
         }
     }
 }
