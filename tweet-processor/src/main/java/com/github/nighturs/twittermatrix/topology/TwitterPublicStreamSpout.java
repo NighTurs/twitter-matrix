@@ -5,12 +5,12 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
-import com.github.nighturs.twittermatrix.config.ActiveMqConfig;
+import com.github.nighturs.twittermatrix.config.ConfigUtils;
+import com.github.nighturs.twittermatrix.config.RabbitMqConfig;
+import com.github.nighturs.twittermatrix.config.TwitterApiConfig;
 import com.github.nighturs.twittermatrix.domain.Tweet;
 import com.github.nighturs.twittermatrix.domain.TweetPhrase;
 import com.github.nighturs.twittermatrix.domain.TwitterStreamParams;
-import com.github.nighturs.twittermatrix.config.ConfigUtils;
-import com.github.nighturs.twittermatrix.config.TwitterApiConfig;
 import com.google.common.collect.Lists;
 import com.twitter.hbc.ClientBuilder;
 import com.twitter.hbc.core.Client;
@@ -56,11 +56,11 @@ class TwitterPublicStreamSpout extends BaseRichSpout {
     @Override
     public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {
         this.twitterApiConfig = ConfigUtils.createFromStormConf(TwitterApiConfig.class, conf);
-        ActiveMqConfig activeMqConfig = ConfigUtils.createFromStormConf(ActiveMqConfig.class, conf);
+        RabbitMqConfig rabbitMqConfig = ConfigUtils.createFromStormConf(RabbitMqConfig.class, conf);
         this.spoutOutputCollector = collector;
         this.statusQueue = new LinkedBlockingQueue<>();
         this.paramsMessageListener = new TwitterStreamParamsMessageListener(this::onApiParamsUpdate);
-        paramsMessageListener.listenStreamParamChanges(activeMqConfig);
+        paramsMessageListener.listenStreamParamChanges(rabbitMqConfig);
     }
 
     private void restartApiClient(TwitterStreamParams params) {

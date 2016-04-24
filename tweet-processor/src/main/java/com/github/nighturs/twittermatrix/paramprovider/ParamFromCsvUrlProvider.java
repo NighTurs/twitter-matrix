@@ -1,6 +1,6 @@
 package com.github.nighturs.twittermatrix.paramprovider;
 
-import com.github.nighturs.twittermatrix.config.ActiveMqConfig;
+import com.github.nighturs.twittermatrix.config.RabbitMqConfig;
 import com.github.nighturs.twittermatrix.domain.TweetPhrase;
 import com.github.nighturs.twittermatrix.domain.TwitterStreamParams;
 import com.google.common.collect.Lists;
@@ -33,11 +33,11 @@ public final class ParamFromCsvUrlProvider {
         }
         URL csvUrl = new URL(args[0]);
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        ActiveMqConfig activeMqConfig = ConfigFactory.create(ActiveMqConfig.class);
-        executor.scheduleAtFixedRate(() -> updateParamsWithChanges(csvUrl, activeMqConfig), 0, 1, TimeUnit.MINUTES);
+        RabbitMqConfig rabbitMqConfig = ConfigFactory.create(RabbitMqConfig.class);
+        executor.scheduleAtFixedRate(() -> updateParamsWithChanges(csvUrl, rabbitMqConfig), 0, 1, TimeUnit.MINUTES);
     }
 
-    private static void updateParamsWithChanges(URL csvUrl, ActiveMqConfig activeMqConfig) {
+    private static void updateParamsWithChanges(URL csvUrl, RabbitMqConfig rabbitMqConfig) {
         try {
             List<TweetPhrase> phrases = new ArrayList<>();
             try (BufferedReader in = new BufferedReader(new InputStreamReader(csvUrl.openStream()))) {
@@ -49,10 +49,10 @@ public final class ParamFromCsvUrlProvider {
             }
             if (curPhrases.get() == null || !curPhrases.get().equals(phrases)) {
                 TwitterStreamParams streamParams = new TwitterStreamParams(phrases, Lists.newArrayList("en", "ru"));
-                ParamProviderUtils.publishParams(activeMqConfig, streamParams);
+                ParamProviderUtils.publishParams(rabbitMqConfig, streamParams);
                 curPhrases.set(phrases);
             }
-        }  catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to get or publish phrases", e);
         }
     }

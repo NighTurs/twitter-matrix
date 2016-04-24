@@ -20,7 +20,7 @@ import static com.github.nighturs.twittermatrix.topology.TweetProcessorTopology.
 
 class TweetToJsonBolt extends BaseBasicBolt {
 
-    private static final String JSON_TWEET_FIELD = "tweetJson";
+    static final String JSON_TWEET_FIELD = "tweetJson";
     private static final Gson gson = new GsonBuilder().create();
 
     @Override

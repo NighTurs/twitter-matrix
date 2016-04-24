@@ -5,7 +5,7 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
-import com.github.nighturs.twittermatrix.config.ActiveMqConfig;
+import com.github.nighturs.twittermatrix.config.RabbitMqConfig;
 import com.github.nighturs.twittermatrix.domain.TweetPhrase;
 import com.github.nighturs.twittermatrix.domain.TwitterStreamParams;
 import org.aeonbits.owner.ConfigFactory;
@@ -26,9 +26,9 @@ class TweetPhraseSpout extends BaseRichSpout {
     @SuppressWarnings("rawtypes")
     @Override
     public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
-        ActiveMqConfig activeMqConfig = ConfigFactory.create(ActiveMqConfig.class);
+        RabbitMqConfig rabbitMqConfig = ConfigFactory.create(RabbitMqConfig.class);
         paramsMessageListener = new TwitterStreamParamsMessageListener(this::onApiParamsUpdate);
-        paramsMessageListener.listenStreamParamChanges(activeMqConfig);
+        paramsMessageListener.listenStreamParamChanges(rabbitMqConfig);
         spoutOutputCollector = collector;
         trackPhrases = new AtomicReference<>();
     }

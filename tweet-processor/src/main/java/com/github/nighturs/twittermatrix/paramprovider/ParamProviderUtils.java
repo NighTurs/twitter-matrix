@@ -1,15 +1,19 @@
 package com.github.nighturs.twittermatrix.paramprovider;
 
-import com.github.nighturs.twittermatrix.config.ActiveMqConfig;
+import com.github.nighturs.twittermatrix.RabbitMqUtil;
+import com.github.nighturs.twittermatrix.config.RabbitMqConfig;
 import com.github.nighturs.twittermatrix.domain.TwitterStreamParams;
+import com.google.common.base.Charsets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.command.ActiveMQTopic;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.jms.*;
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 
 final class ParamProviderUtils {
 
@@ -20,20 +24,20 @@ final class ParamProviderUtils {
         throw new UnsupportedOperationException("Instance not supported");
     }
 
-    static void publishParams(ActiveMqConfig activeMqConfig, TwitterStreamParams streamParams) {
+    static void publishParams(RabbitMqConfig mqConfig, TwitterStreamParams streamParams) {
+        ConnectionFactory factory = RabbitMqUtil.connectionFactory(mqConfig);
         try {
-            ConnectionFactory cf = new ActiveMQConnectionFactory(activeMqConfig.activeMqUsername(),
-                    activeMqConfig.activeMqPassword(),
-                    activeMqConfig.activeMqUrl());
-            Destination dest = new ActiveMQTopic(activeMqConfig.activeMqTwitterStreamParamsTopic());
-            Connection connection = cf.createConnection();
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            MessageProducer producer = session.createProducer(dest);
-            producer.send(session.createTextMessage(gson.toJson(streamParams)));
+            Connection connection = factory.newConnection();
+            Channel channel = connection.createChannel();
+            channel.exchangeDeclare(mqConfig.rabbitMqTwitterStreamParamsExchange(), "fanout");
+            channel.basicPublish(mqConfig.rabbitMqTwitterStreamParamsExchange(),
+                    "",
+                    null,
+                    gson.toJson(streamParams).getBytes(Charsets.UTF_8));
             logger.info("Sent stream parameters update, StreamParams={}", streamParams);
-            session.close();
+            channel.close();
             connection.close();
-        } catch (JMSException e) {
+        } catch (TimeoutException | IOException e) {
             throw new RuntimeException(e);
         }
     }

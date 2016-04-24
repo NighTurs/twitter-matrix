@@ -8,7 +8,7 @@
         var BCOLOR = '#000';
         var NEW_CHAR_COLOR = '#0F0';
         var FONT = 'Courier New';
-        var WS_URL = "ws://" + location.hostname + ":61614/stomp";
+        var WS_URL = "ws://" + location.hostname + ":15674/ws";
         var DRAW_INTERVAL = 33;
 
         // application state
@@ -283,11 +283,11 @@
             adjustToNewWindowSize()
         });
 
-        var client = Stomp.client(WS_URL);
+        var client = Stomp.client(WS_URL, []);
         client.debug = null;
 
-        client.connect({}, function () {
-            client.subscribe("/topic/twitter.tweet",
+        client.connect('guest', 'guest', function () {
+            client.subscribe("/exchange/twitter.tweet",
                 function (message) {
                     var tweet = JSON.parse(message.body);
                     if (!filterTweet(tweet)) {
@@ -296,7 +296,7 @@
                 },
                 {priority: 9}
             );
-            client.subscribe("/topic/twitter.tweet.phrases",
+            client.subscribe("/exchange/twitter.tweet.phrases",
                 function (message) {
                     var msg = JSON.parse(message.body);
                     var curPhrases = new Map();
