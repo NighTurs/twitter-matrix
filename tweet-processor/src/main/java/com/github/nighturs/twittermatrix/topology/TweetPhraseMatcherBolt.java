@@ -6,7 +6,6 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseBasicBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
-import com.github.nighturs.twittermatrix.config.ConfigUtils;
 import com.github.nighturs.twittermatrix.config.RabbitMqConfig;
 import com.github.nighturs.twittermatrix.domain.Tweet;
 import com.github.nighturs.twittermatrix.domain.TweetPhrase;
@@ -33,15 +32,19 @@ class TweetPhraseMatcherBolt extends BaseBasicBolt {
     AtomicReference<TrackPhrases> trackPhrases = new AtomicReference<>();
     @SuppressWarnings("FieldCanBeLocal")
     private TwitterStreamParamsMessageListener paramsMessageListener;
+    private final RabbitMqConfig mqConfig;
+
+    TweetPhraseMatcherBolt(RabbitMqConfig mqConfig) {
+        this.mqConfig = mqConfig;
+    }
 
     @SuppressWarnings("rawtypes")
     @Override
     public void prepare(Map stormConf, TopologyContext context) {
         super.prepare(stormConf, context);
         trackPhrases.set(new TrackPhrases(new HashMap<>(), HashMultimap.create()));
-        RabbitMqConfig rabbitMqConfig = ConfigUtils.createFromStormConf(RabbitMqConfig.class, stormConf);
         paramsMessageListener = new TwitterStreamParamsMessageListener(this::onApiParamsUpdate);
-        paramsMessageListener.listenStreamParamChanges(rabbitMqConfig);
+        paramsMessageListener.listenStreamParamChanges(mqConfig);
     }
 
     @Override

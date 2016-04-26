@@ -5,7 +5,6 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
-import com.github.nighturs.twittermatrix.config.ConfigUtils;
 import com.github.nighturs.twittermatrix.config.RabbitMqConfig;
 import com.github.nighturs.twittermatrix.config.TwitterApiConfig;
 import com.github.nighturs.twittermatrix.domain.Tweet;
@@ -41,12 +40,18 @@ class TwitterPublicStreamSpout extends BaseRichSpout {
 
     private static final Logger logger = LoggerFactory.getLogger(TwitterPublicStreamSpout.class);
     private static final int MSG_QUEUE_CAPACITY = 100000;
-    private TwitterApiConfig twitterApiConfig;
+    private final TwitterApiConfig twitterApiConfig;
+    private final RabbitMqConfig rabbitMqConfig;
     private BlockingQueue<Status> statusQueue;
     private SpoutOutputCollector spoutOutputCollector;
     private Twitter4jStatusClient t4jClient;
     @SuppressWarnings("FieldCanBeLocal")
     private TwitterStreamParamsMessageListener paramsMessageListener;
+
+    TwitterPublicStreamSpout(TwitterApiConfig twitterApiConfig, RabbitMqConfig rabbitMqConfig) {
+        this.twitterApiConfig = twitterApiConfig;
+        this.rabbitMqConfig = rabbitMqConfig;
+    }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
@@ -55,8 +60,6 @@ class TwitterPublicStreamSpout extends BaseRichSpout {
 
     @Override
     public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {
-        this.twitterApiConfig = ConfigUtils.createFromStormConf(TwitterApiConfig.class, conf);
-        RabbitMqConfig rabbitMqConfig = ConfigUtils.createFromStormConf(RabbitMqConfig.class, conf);
         this.spoutOutputCollector = collector;
         this.statusQueue = new LinkedBlockingQueue<>();
         this.paramsMessageListener = new TwitterStreamParamsMessageListener(this::onApiParamsUpdate);

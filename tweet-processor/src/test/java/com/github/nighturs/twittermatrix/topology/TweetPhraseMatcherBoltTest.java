@@ -1,10 +1,12 @@
 package com.github.nighturs.twittermatrix.topology;
 
+import com.github.nighturs.twittermatrix.config.RabbitMqConfig;
 import com.github.nighturs.twittermatrix.domain.TweetPhrase;
 import com.github.nighturs.twittermatrix.domain.TwitterStreamParams;
 import com.github.nighturs.twittermatrix.topology.TweetPhraseMatcherBolt.TrackPhrases;
 import com.google.common.collect.*;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.Collections;
 import java.util.Map;
@@ -17,7 +19,7 @@ public class TweetPhraseMatcherBoltTest {
 
     @Test
     public void testOnApiParamsUpdate() throws Exception {
-        TweetPhraseMatcherBolt bolt = new TweetPhraseMatcherBolt();
+        TweetPhraseMatcherBolt bolt = newTweetPhraseMatcherBolt();
         bolt.onApiParamsUpdate(new TwitterStreamParams(Lists.newArrayList(ph("OneWord"), ph("Multiple Words")),
                 Collections.emptyList()));
         assertEquals(sharedTermsCountPerPhrase(), bolt.trackPhrases.get().getTermsCountPerPhrase());
@@ -26,7 +28,7 @@ public class TweetPhraseMatcherBoltTest {
 
     @Test
     public void testOnApiParamsUpdateExtraSpacesIgnored() throws Exception {
-        TweetPhraseMatcherBolt bolt = new TweetPhraseMatcherBolt();
+        TweetPhraseMatcherBolt bolt = newTweetPhraseMatcherBolt();
         bolt.onApiParamsUpdate(new TwitterStreamParams(Lists.newArrayList(ph("   two    terms   ")),
                 Collections.emptyList()));
         assertEquals(Integer.valueOf(2),
@@ -35,7 +37,7 @@ public class TweetPhraseMatcherBoltTest {
 
     @Test
     public void testFindMatchedPhrases() throws Exception {
-        TweetPhraseMatcherBolt bolt = new TweetPhraseMatcherBolt();
+        TweetPhraseMatcherBolt bolt = newTweetPhraseMatcherBolt();
         bolt.trackPhrases.set(sharedTrachPhrases());
         assertThat(bolt.findMatchedPhrases("There are, mmm, multiple words."), hasItem(ph("Multiple Words")));
         assertThat(bolt.findMatchedPhrases("There are multiple words and oneWord."),
@@ -48,6 +50,10 @@ public class TweetPhraseMatcherBoltTest {
                 .put("multiple", ph("Multiple Words"))
                 .put("words", ph("Multiple Words"))
                 .build());
+    }
+
+    private TweetPhraseMatcherBolt newTweetPhraseMatcherBolt() {
+        return new TweetPhraseMatcherBolt(Mockito.mock(RabbitMqConfig.class));
     }
 
     private Map<TweetPhrase, Integer> sharedTermsCountPerPhrase() {

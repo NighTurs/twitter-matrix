@@ -6,7 +6,6 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseBasicBolt;
 import backtype.storm.tuple.Tuple;
 import com.github.nighturs.twittermatrix.RabbitMqUtil;
-import com.github.nighturs.twittermatrix.config.ConfigUtils;
 import com.github.nighturs.twittermatrix.config.RabbitMqConfig;
 import com.github.nighturs.twittermatrix.domain.Tweet;
 import com.github.nighturs.twittermatrix.domain.TweetPhrase;
@@ -33,13 +32,16 @@ class TweetMqProducerBolt extends BaseBasicBolt {
     private static final Gson gson = new GsonBuilder().create();
     private Connection mqConn;
     private Channel mqChannel;
-    private RabbitMqConfig mqConfig;
+    private final RabbitMqConfig mqConfig;
+
+    TweetMqProducerBolt(RabbitMqConfig mqConfig) {
+        this.mqConfig = mqConfig;
+    }
 
     @SuppressWarnings("rawtypes")
     @Override
     public void prepare(Map stormConf, TopologyContext context) {
         super.prepare(stormConf, context);
-        mqConfig = ConfigUtils.createFromStormConf(RabbitMqConfig.class, stormConf);
         ConnectionFactory factory = RabbitMqUtil.connectionFactory(mqConfig);
         try {
             mqConn = factory.newConnection();

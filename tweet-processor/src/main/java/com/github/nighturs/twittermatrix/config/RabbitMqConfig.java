@@ -1,10 +1,10 @@
 package com.github.nighturs.twittermatrix.config;
 
-import org.aeonbits.owner.Accessible;
+import org.aeonbits.owner.Config;
 import org.aeonbits.owner.Config.Sources;
 
 @Sources("classpath:rabbitMqConfig.properties")
-public interface RabbitMqConfig extends Accessible {
+public interface RabbitMqConfig extends Config {
 
     @Key("rabbitmq.host")
     String rabbitMqHost();

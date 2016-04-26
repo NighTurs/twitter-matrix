@@ -30,28 +30,23 @@ final class TweetProcessorTopology {
         TwitterApiConfig apiConfig = ConfigFactory.create(TwitterApiConfig.class);
         RabbitMqConfig mqConfig = ConfigFactory.create(RabbitMqConfig.class);
         TopologyBuilder builder = new TopologyBuilder();
-        builder.setSpout(TWITTER_PUBLIC_STREAM_SPOUT, new TwitterPublicStreamSpout());
-        builder.setBolt(TWEET_PHRASE_MATCHER_BOLT, new TweetPhraseMatcherBolt())
+        builder.setSpout(TWITTER_PUBLIC_STREAM_SPOUT, new TwitterPublicStreamSpout(apiConfig, mqConfig));
+        builder.setBolt(TWEET_PHRASE_MATCHER_BOLT, new TweetPhraseMatcherBolt(mqConfig))
                 .shuffleGrouping(TWITTER_PUBLIC_STREAM_SPOUT);
-        builder.setBolt(TWEET_MQ_PRODUCER_BOLT, new TweetMqProducerBolt()).shuffleGrouping(TWEET_PHRASE_MATCHER_BOLT);
+        builder.setBolt(TWEET_MQ_PRODUCER_BOLT, new TweetMqProducerBolt(mqConfig))
+                .shuffleGrouping(TWEET_PHRASE_MATCHER_BOLT);
 
         builder.setSpout(TWEET_PHRASE_SPOUT, new TweetPhraseSpout());
         builder.setBolt(TWEET_PHRASE_STATISTICS_BOLT, new TweetPhraseStatisticsBolt())
                 .shuffleGrouping(TWEET_PHRASE_SPOUT)
                 .shuffleGrouping(TWEET_PHRASE_MATCHER_BOLT);
-        builder.setBolt(JMS_TWEET_PHRASES_TOPIC_BOLT, new TweetPhraseMqProducerBolt())
+        builder.setBolt(JMS_TWEET_PHRASES_TOPIC_BOLT, new TweetPhraseMqProducerBolt(mqConfig))
                 .shuffleGrouping(TWEET_PHRASE_STATISTICS_BOLT);
 
         Config config = new Config();
         config.registerSerialization(Tweet.class);
         config.registerSerialization(List.class);
         config.registerSerialization(TweetPhrase.class);
-        for (String propName : apiConfig.propertyNames()) {
-            config.put(propName, apiConfig.getProperty(propName));
-        }
-        for (String propName : mqConfig.propertyNames()) {
-            config.put(propName, apiConfig.getProperty(propName));
-        }
 
         new LocalCluster().submitTopology(TWEET_PROCESSOR, config, builder.createTopology());
     }
