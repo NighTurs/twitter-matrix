@@ -62,8 +62,7 @@ class TweetPhraseMatcherBolt extends BaseBasicBolt {
     List<TweetPhrase> findMatchedPhrases(String tweetText) {
         StringBuilder sb = tweetText.toLowerCase(Locale.ROOT)
                 .chars()
-                .map(x -> Character.isWhitespace(x) ? SPACE_CODEPOINT : x)
-                .filter(x -> Character.isAlphabetic(x) || Character.isWhitespace(x))
+                .map(x -> Character.isWhitespace(x) || !Character.isAlphabetic(x) ? SPACE_CODEPOINT : x)
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append);
         TrackPhrases tp = trackPhrases.get();
         Map<TweetPhrase, Integer> termsCountPerPhrase = Maps.newHashMap(tp.termsCountPerPhrase);

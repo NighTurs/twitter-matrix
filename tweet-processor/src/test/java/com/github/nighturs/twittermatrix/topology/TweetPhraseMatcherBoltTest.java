@@ -38,11 +38,19 @@ public class TweetPhraseMatcherBoltTest {
     @Test
     public void testFindMatchedPhrases() throws Exception {
         TweetPhraseMatcherBolt bolt = newTweetPhraseMatcherBolt();
-        bolt.trackPhrases.set(sharedTrachPhrases());
+        bolt.trackPhrases.set(sharedTrackPhrases());
         assertThat(bolt.findMatchedPhrases("There are, mmm, multiple words."), hasItem(ph("Multiple Words")));
         assertThat(bolt.findMatchedPhrases("There are multiple words and oneWord."),
                 allOf(hasItem(ph("Multiple Words")), hasItems(ph("OneWord"))));
         assertTrue(bolt.findMatchedPhrases("No word for you").isEmpty());
+    }
+
+    @Test
+    public void testFindMatchedPhrasesWordsDelimitedOnlyByPunctuation() throws Exception {
+        TweetPhraseMatcherBolt bolt = newTweetPhraseMatcherBolt();
+        bolt.onApiParamsUpdate(singlePhraseParams("python"));
+        assertThat(bolt.findMatchedPhrases("bandwidth monitor: my first pip/python package"),
+                hasItem(ph("python")));
     }
 
     private Multimap<String, TweetPhrase> sharedPhrasesPerTerm() {
@@ -60,7 +68,11 @@ public class TweetPhraseMatcherBoltTest {
         return ImmutableMap.<TweetPhrase, Integer>builder().put(ph("OneWord"), 1).put(ph("Multiple Words"), 2).build();
     }
 
-    private TrackPhrases sharedTrachPhrases() {
+    private TrackPhrases sharedTrackPhrases() {
         return new TrackPhrases(sharedTermsCountPerPhrase(), sharedPhrasesPerTerm());
+    }
+
+    private TwitterStreamParams singlePhraseParams(String phrase) {
+        return new TwitterStreamParams(Collections.singletonList(ph(phrase)), Collections.emptyList());
     }
 }
