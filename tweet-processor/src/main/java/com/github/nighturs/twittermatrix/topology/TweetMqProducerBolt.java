@@ -8,22 +8,29 @@ import backtype.storm.tuple.Tuple;
 import com.github.nighturs.twittermatrix.RabbitMqUtil;
 import com.github.nighturs.twittermatrix.config.ConfigUtils;
 import com.github.nighturs.twittermatrix.config.RabbitMqConfig;
+import com.github.nighturs.twittermatrix.domain.Tweet;
+import com.github.nighturs.twittermatrix.domain.TweetPhrase;
 import com.google.common.base.Charsets;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import lombok.Data;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
-
-import static com.github.nighturs.twittermatrix.topology.TweetToJsonBolt.JSON_TWEET_FIELD;
+import java.util.stream.Collectors;
 
 class TweetMqProducerBolt extends BaseBasicBolt {
 
     private static final Logger logger = LoggerFactory.getLogger(TweetMqProducerBolt.class);
+    private static final Gson gson = new GsonBuilder().create();
     private Connection mqConn;
     private Channel mqChannel;
     private RabbitMqConfig mqConfig;
@@ -56,9 +63,10 @@ class TweetMqProducerBolt extends BaseBasicBolt {
 
     @Override
     public void execute(Tuple input, BasicOutputCollector collector) {
-        String tweet = input.getStringByField(JSON_TWEET_FIELD);
+        Tweet tweet = (Tweet) input.getValueByField(TweetProcessorTopology.TWEET_FIELD);
+        String json = gson.toJson(TweetView.of(tweet));
         try {
-            mqChannel.basicPublish(mqConfig.rabbitMqTwitterTweetExchange(), "", null, tweet.getBytes(Charsets.UTF_8));
+            mqChannel.basicPublish(mqConfig.rabbitMqTwitterTweetExchange(), "", null, json.getBytes(Charsets.UTF_8));
             logger.info("Published tweet, Tweet={}", tweet);
         } catch (IOException e) {
             throw new RuntimeException(String.format("Failed to publish tweet, Tweet=%s", tweet), e);
@@ -68,4 +76,25 @@ class TweetMqProducerBolt extends BaseBasicBolt {
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
     }
+
+    @Data
+    private static class TweetView {
+
+        @NonNull
+        private final Long id;
+        @NonNull
+        private final String url;
+        @NonNull
+        private final String text;
+        @NonNull
+        private final List<String> phrases;
+
+        private static TweetView of(Tweet tweet) {
+            return new TweetView(tweet.getId(),
+                    tweet.getUrl(),
+                    tweet.getText(),
+                    tweet.getMatchedPhrases().stream().map(TweetPhrase::getPhrase).collect(Collectors.toList()));
+        }
+    }
+
 }

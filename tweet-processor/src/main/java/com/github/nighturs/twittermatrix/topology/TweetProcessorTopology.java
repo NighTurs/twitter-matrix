@@ -35,20 +35,14 @@ final class TweetProcessorTopology {
         builder.setSpout(TWITTER_PUBLIC_STREAM_SPOUT, new TwitterPublicStreamSpout());
         builder.setBolt(TWEET_PHRASE_MATCHER_BOLT, new TweetPhraseMatcherBolt())
                 .shuffleGrouping(TWITTER_PUBLIC_STREAM_SPOUT);
-        builder.setBolt(TWEET_TO_JSON_BOLT, new TweetToJsonBolt()).shuffleGrouping(TWEET_PHRASE_MATCHER_BOLT);
-
-        TweetMqProducerBolt tweetMqProducerBolt = new TweetMqProducerBolt();
-        builder.setBolt(TWEET_MQ_PRODUCER_BOLT, tweetMqProducerBolt).shuffleGrouping(TWEET_TO_JSON_BOLT);
+        builder.setBolt(TWEET_MQ_PRODUCER_BOLT, new TweetMqProducerBolt()).shuffleGrouping(TWEET_PHRASE_MATCHER_BOLT);
 
         builder.setSpout(TWEET_PHRASE_SPOUT, new TweetPhraseSpout());
         builder.setBolt(TWEET_PHRASE_STATISTICS_BOLT, new TweetPhraseStatisticsBolt())
                 .shuffleGrouping(TWEET_PHRASE_SPOUT)
                 .shuffleGrouping(TWEET_PHRASE_MATCHER_BOLT);
-        builder.setBolt(TWEET_PHRASE_TO_JSON_BOLT, new TweetPhrasesToJsonBolt())
+        builder.setBolt(JMS_TWEET_PHRASES_TOPIC_BOLT, new TweetPhraseMqProducerBolt())
                 .shuffleGrouping(TWEET_PHRASE_STATISTICS_BOLT);
-        TweetPhraseMqProducerBolt tweetPhraseMqProducerBolt = new TweetPhraseMqProducerBolt();
-        builder.setBolt(JMS_TWEET_PHRASES_TOPIC_BOLT, tweetPhraseMqProducerBolt)
-                .shuffleGrouping(TWEET_PHRASE_TO_JSON_BOLT);
 
         Config config = new Config();
         config.registerSerialization(Tweet.class);

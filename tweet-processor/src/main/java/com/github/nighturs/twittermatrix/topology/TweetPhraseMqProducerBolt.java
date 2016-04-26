@@ -8,22 +8,29 @@ import backtype.storm.tuple.Tuple;
 import com.github.nighturs.twittermatrix.RabbitMqUtil;
 import com.github.nighturs.twittermatrix.config.ConfigUtils;
 import com.github.nighturs.twittermatrix.config.RabbitMqConfig;
+import com.github.nighturs.twittermatrix.domain.TweetPhrase;
 import com.google.common.base.Charsets;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import lombok.Data;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
-import static com.github.nighturs.twittermatrix.topology.TweetPhrasesToJsonBolt.JSON_TWEET_PHRASES_FIELD;
+import static com.github.nighturs.twittermatrix.topology.TweetProcessorTopology.TWEET_PHRASES_FIELD;
 
 class TweetPhraseMqProducerBolt extends BaseBasicBolt {
 
     private static final Logger logger = LoggerFactory.getLogger(TweetPhraseMqProducerBolt.class);
+    private static final Gson gson = new GsonBuilder().create();
     private Connection mqConn;
     private Channel mqChannel;
     private RabbitMqConfig mqConfig;
@@ -56,19 +63,29 @@ class TweetPhraseMqProducerBolt extends BaseBasicBolt {
 
     @Override
     public void execute(Tuple input, BasicOutputCollector collector) {
-        String tweetPhrase = input.getStringByField(JSON_TWEET_PHRASES_FIELD);
+        @SuppressWarnings("unchecked")
+        List<TweetPhrase> tweetPhrases = (List<TweetPhrase>) input.getValueByField(TWEET_PHRASES_FIELD);
+        String json = gson.toJson(new TweetPhrasesView(tweetPhrases));
         try {
             mqChannel.basicPublish(mqConfig.rabbitMqTwitterTweetPhrasesExchange(),
                     "",
                     null,
-                    tweetPhrase.getBytes(Charsets.UTF_8));
-            logger.info("Published tweet phrase, TweetPhrase={}", tweetPhrase);
+                    json.getBytes(Charsets.UTF_8));
+            logger.info("Published tweet phrase, TweetPhrases={}", tweetPhrases);
         } catch (IOException e) {
-            throw new RuntimeException(String.format("Failed to publish tweetPhrase, TweetPhrase=%s", tweetPhrase), e);
+            throw new RuntimeException(String.format("Failed to publish tweetPhrase, TweetPhrases=%s", tweetPhrases),
+                    e);
         }
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
+    }
+
+    @Data
+    private static class TweetPhrasesView {
+
+        @NonNull
+        private final List<TweetPhrase> phrases;
     }
 }
