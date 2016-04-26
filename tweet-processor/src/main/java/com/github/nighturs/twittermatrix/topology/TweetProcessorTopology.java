@@ -16,12 +16,10 @@ final class TweetProcessorTopology {
     private static final String TWITTER_PUBLIC_STREAM_SPOUT = "TWITTER_PUBLIC_STREAM_SPOUT";
     private static final String TWEET_MQ_PRODUCER_BOLT = "TWEET_MQ_PRODUCER_BOLT";
     private static final String TWEET_PROCESSOR = "TWEET_PROCESSOR";
-    private static final String TWEET_TO_JSON_BOLT = "TWEET_TO_JSON_BOLT";
     private static final String TWEET_PHRASE_MATCHER_BOLT = "TWEET_PHRASE_MATCHER_BOLT";
     private static final String TWEET_PHRASE_SPOUT = "TWEET_PHRASE_SPOUT";
     private static final String TWEET_PHRASE_STATISTICS_BOLT = "TWEET_PHRASE_STATISTICS_BOLT";
     private static final String JMS_TWEET_PHRASES_TOPIC_BOLT = "JMS_TWEET_PHRASES_TOPIC_BOLT";
-    private static final String TWEET_PHRASE_TO_JSON_BOLT = "TWEET_PHRASE_TO_JSON_BOLT";
     static final String TWEET_FIELD = "tweet";
     static final String TWEET_PHRASES_FIELD = "tweetPhrases";
 
