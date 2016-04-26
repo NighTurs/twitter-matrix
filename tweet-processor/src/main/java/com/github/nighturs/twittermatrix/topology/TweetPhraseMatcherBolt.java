@@ -52,7 +52,7 @@ class TweetPhraseMatcherBolt extends BaseBasicBolt {
         Tweet tweet = (Tweet) input.getValueByField(TWEET_FIELD);
         List<TweetPhrase> matchedPhrases = findMatchedPhrases(tweet.getText());
         if (matchedPhrases.isEmpty()) {
-            logger.info("No phrases matched, Tweet={}", tweet);
+            logger.debug("No phrases matched, Tweet={}", tweet);
         } else {
             logger.debug("Matched phrases, Tweet={}, Phrases={}", tweet, matchedPhrases);
         }

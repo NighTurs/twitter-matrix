@@ -20,6 +20,7 @@ final class TweetProcessorTopology {
     private static final String TWEET_PHRASE_SPOUT = "TWEET_PHRASE_SPOUT";
     private static final String TWEET_PHRASE_STATISTICS_BOLT = "TWEET_PHRASE_STATISTICS_BOLT";
     private static final String JMS_TWEET_PHRASES_TOPIC_BOLT = "JMS_TWEET_PHRASES_TOPIC_BOLT";
+    private static final String UNMATCHED_TWEET_FILTER_BOLT = "UNMATCHED_TWEET_FILTER_BOLT";
     static final String TWEET_FIELD = "tweet";
     static final String TWEET_PHRASES_FIELD = "tweetPhrases";
 
@@ -33,8 +34,10 @@ final class TweetProcessorTopology {
         builder.setSpout(TWITTER_PUBLIC_STREAM_SPOUT, new TwitterPublicStreamSpout(apiConfig, mqConfig));
         builder.setBolt(TWEET_PHRASE_MATCHER_BOLT, new TweetPhraseMatcherBolt(mqConfig))
                 .shuffleGrouping(TWITTER_PUBLIC_STREAM_SPOUT);
-        builder.setBolt(TWEET_MQ_PRODUCER_BOLT, new TweetMqProducerBolt(mqConfig))
+        builder.setBolt(UNMATCHED_TWEET_FILTER_BOLT, new UnmatchedTweetFilterBolt())
                 .shuffleGrouping(TWEET_PHRASE_MATCHER_BOLT);
+        builder.setBolt(TWEET_MQ_PRODUCER_BOLT, new TweetMqProducerBolt(mqConfig))
+                .shuffleGrouping(UNMATCHED_TWEET_FILTER_BOLT);
 
         builder.setSpout(TWEET_PHRASE_SPOUT, new TweetPhraseSpout());
         builder.setBolt(TWEET_PHRASE_STATISTICS_BOLT, new TweetPhraseStatisticsBolt())
