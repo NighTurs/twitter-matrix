@@ -27,7 +27,7 @@ public class TweetPhraseStatisticsBoltTest {
         bolt.updateMatchedPhrases(fakeTweet().withMatchedPhrases(singletonList(ph2)));
         assertThat(bolt.enrichWithStats(Lists.newArrayList(ph1, ph2)),
                 allOf(iterableWithSize(2), hasItem(ph1.withStats(stats(2))), hasItem(ph2.withStats(stats(1)))));
-        bolt.systemClock = fixedClock(9, 32);
+        bolt.systemClock = fixedClock(10, 31);
         assertThat(bolt.enrichWithStats(Lists.newArrayList(ph1, ph2)),
                 allOf(iterableWithSize(2), hasItem(ph1.withStats(stats(0))), hasItem(ph2.withStats(stats(0)))));
     }

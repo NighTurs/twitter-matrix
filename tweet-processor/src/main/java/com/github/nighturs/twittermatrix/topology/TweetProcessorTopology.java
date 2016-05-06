@@ -4,6 +4,7 @@ import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.topology.TopologyBuilder;
 import com.github.nighturs.twittermatrix.config.RabbitMqConfig;
+import com.github.nighturs.twittermatrix.config.TopologyConfig;
 import com.github.nighturs.twittermatrix.config.TwitterApiConfig;
 import com.github.nighturs.twittermatrix.domain.Tweet;
 import com.github.nighturs.twittermatrix.domain.TweetPhrase;
@@ -21,6 +22,7 @@ final class TweetProcessorTopology {
     private static final String TWEET_PHRASE_STATISTICS_BOLT = "TWEET_PHRASE_STATISTICS_BOLT";
     private static final String JMS_TWEET_PHRASES_TOPIC_BOLT = "JMS_TWEET_PHRASES_TOPIC_BOLT";
     private static final String UNMATCHED_TWEET_FILTER_BOLT = "UNMATCHED_TWEET_FILTER_BOLT";
+    private static final String RETWEET_FILTER_BOLT = "RETWEET_FILTER_BOLT";
     static final String TWEET_FIELD = "tweet";
     static final String TWEET_PHRASES_FIELD = "tweetPhrases";
 
@@ -30,10 +32,13 @@ final class TweetProcessorTopology {
     public static void main(String[] args) {
         TwitterApiConfig apiConfig = ConfigFactory.create(TwitterApiConfig.class);
         RabbitMqConfig mqConfig = ConfigFactory.create(RabbitMqConfig.class);
+        TopologyConfig topologyConfig = ConfigFactory.create(TopologyConfig.class);
         TopologyBuilder builder = new TopologyBuilder();
         builder.setSpout(TWITTER_PUBLIC_STREAM_SPOUT, new TwitterPublicStreamSpout(apiConfig, mqConfig));
-        builder.setBolt(TWEET_PHRASE_MATCHER_BOLT, new TweetPhraseMatcherBolt(mqConfig))
+        builder.setBolt(RETWEET_FILTER_BOLT, new RetweetFilterBolt(topologyConfig))
                 .shuffleGrouping(TWITTER_PUBLIC_STREAM_SPOUT);
+        builder.setBolt(TWEET_PHRASE_MATCHER_BOLT, new TweetPhraseMatcherBolt(mqConfig))
+                .shuffleGrouping(RETWEET_FILTER_BOLT);
         builder.setBolt(UNMATCHED_TWEET_FILTER_BOLT, new UnmatchedTweetFilterBolt())
                 .shuffleGrouping(TWEET_PHRASE_MATCHER_BOLT);
         builder.setBolt(TWEET_MQ_PRODUCER_BOLT, new TweetMqProducerBolt(mqConfig))

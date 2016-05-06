@@ -22,6 +22,6 @@ final class TestUtils {
     }
 
     static Clock fixedClock(int min, int sec) {
-        return Clock.fixed(LocalDateTime.of(2016, 10, 20, min, sec).toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
+        return Clock.fixed(LocalDateTime.of(2016, 10, 20, 9, min, sec).toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
     }
 }

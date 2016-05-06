@@ -33,4 +33,8 @@ public final class Tweet {
                 actualStatus.getText(),
                 null);
     }
+
+    public boolean isRetweet() {
+        return id != originId;
+    }
 }
