@@ -1,12 +1,12 @@
 package com.github.nighturs.twittermatrix.domain;
 
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 import lombok.experimental.Wither;
 
 import java.util.regex.Pattern;
 
-@Data
+@Value
 @Wither
 public final class TweetPhrase {
 

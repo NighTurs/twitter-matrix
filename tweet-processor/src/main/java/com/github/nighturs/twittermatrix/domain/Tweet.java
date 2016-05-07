@@ -1,19 +1,17 @@
 package com.github.nighturs.twittermatrix.domain;
 
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 import lombok.experimental.Wither;
 import twitter4j.Status;
 
 import java.util.List;
 
-@Data
+@Value
 @Wither
 public final class Tweet {
 
-    @NonNull
     private final long id;
-    @NonNull
     private final long originId;
     @NonNull
     private final String originUserScreenName;

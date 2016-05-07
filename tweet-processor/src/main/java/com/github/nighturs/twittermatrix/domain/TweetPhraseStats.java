@@ -1,9 +1,9 @@
 package com.github.nighturs.twittermatrix.domain;
 
-import lombok.Data;
+import lombok.Value;
 import lombok.experimental.Wither;
 
-@Data
+@Value
 @Wither
 public class TweetPhraseStats {
 

@@ -15,8 +15,8 @@ import com.google.gson.GsonBuilder;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,15 +87,16 @@ class TweetPhraseMqProducerBolt extends BaseBasicBolt {
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
     }
 
-    @Data
+    @Value
     private static class TweetPhrasesView {
 
         @NonNull
         private final List<TweetPhraseView> phrases;
     }
 
-    @Data
+    @Value
     private static class TweetPhraseView {
+
         @NonNull
         private final String phrase;
         @NonNull

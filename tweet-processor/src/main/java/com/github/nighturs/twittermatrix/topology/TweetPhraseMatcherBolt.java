@@ -15,7 +15,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import lombok.Data;
+import lombok.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,8 +104,9 @@ class TweetPhraseMatcherBolt extends BaseBasicBolt {
         trackPhrases.set(newTrackPhrases);
     }
 
-    @Data
+    @Value
     static class TrackPhrases {
+
         private final Map<TweetPhrase, Integer> termsCountPerPhrase;
         private final Multimap<String, TweetPhrase> phrasesPerTerm;
     }
