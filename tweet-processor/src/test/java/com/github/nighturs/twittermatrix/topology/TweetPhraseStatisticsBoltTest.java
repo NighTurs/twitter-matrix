@@ -18,8 +18,8 @@ public class TweetPhraseStatisticsBoltTest {
     public void testUpdateMatchedPhrases() throws Exception {
         TweetPhraseStatisticsBolt bolt = new TweetPhraseStatisticsBolt();
         bolt.systemClock = fixedClock(9, 30);
-        TweetPhrase ph1 = ph("Phrase one");
-        TweetPhrase ph2 = ph("Phrase two");
+        TweetPhrase ph1 = ph("phrase one");
+        TweetPhrase ph2 = ph("phrase two");
         assertThat(bolt.enrichWithStats(Lists.newArrayList(ph1, ph2)),
                 allOf(iterableWithSize(2), hasItem(ph1.withStats(stats(0))), hasItem(ph2.withStats(stats(0)))));
         bolt.updateMatchedPhrases(fakeTweet().withMatchedPhrases(singletonList(ph1)));

@@ -20,28 +20,19 @@ public class TweetPhraseMatcherBoltTest {
     @Test
     public void testOnApiParamsUpdate() throws Exception {
         TweetPhraseMatcherBolt bolt = newTweetPhraseMatcherBolt();
-        bolt.onApiParamsUpdate(new TwitterStreamParams(Lists.newArrayList(ph("OneWord"), ph("Multiple Words")),
-                Collections.emptyList()));
+        bolt.onApiParamsUpdate(new TwitterStreamParams(Lists.newArrayList(ph("oneword"), ph("multiple words")),
+                Collections.singletonList("en")));
         assertEquals(sharedTermsCountPerPhrase(), bolt.trackPhrases.get().getTermsCountPerPhrase());
         assertEquals(sharedPhrasesPerTerm(), bolt.trackPhrases.get().getPhrasesPerTerm());
-    }
-
-    @Test
-    public void testOnApiParamsUpdateExtraSpacesIgnored() throws Exception {
-        TweetPhraseMatcherBolt bolt = newTweetPhraseMatcherBolt();
-        bolt.onApiParamsUpdate(new TwitterStreamParams(Lists.newArrayList(ph("   two    terms   ")),
-                Collections.emptyList()));
-        assertEquals(Integer.valueOf(2),
-                bolt.trackPhrases.get().getTermsCountPerPhrase().get(ph("   two    terms   ")));
     }
 
     @Test
     public void testFindMatchedPhrases() throws Exception {
         TweetPhraseMatcherBolt bolt = newTweetPhraseMatcherBolt();
         bolt.trackPhrases.set(sharedTrackPhrases());
-        assertThat(bolt.findMatchedPhrases("There are, mmm, multiple words."), hasItem(ph("Multiple Words")));
+        assertThat(bolt.findMatchedPhrases("There are, mmm, multiple words."), hasItem(ph("multiple words")));
         assertThat(bolt.findMatchedPhrases("There are multiple words and oneWord."),
-                allOf(hasItem(ph("Multiple Words")), hasItems(ph("OneWord"))));
+                allOf(hasItem(ph("multiple words")), hasItems(ph("oneword"))));
         assertTrue(bolt.findMatchedPhrases("No word for you").isEmpty());
     }
 
@@ -54,9 +45,9 @@ public class TweetPhraseMatcherBoltTest {
     }
 
     private Multimap<String, TweetPhrase> sharedPhrasesPerTerm() {
-        return HashMultimap.create(ImmutableMultimap.<String, TweetPhrase>builder().put("oneword", ph("OneWord"))
-                .put("multiple", ph("Multiple Words"))
-                .put("words", ph("Multiple Words"))
+        return HashMultimap.create(ImmutableMultimap.<String, TweetPhrase>builder().put("oneword", ph("oneword"))
+                .put("multiple", ph("multiple words"))
+                .put("words", ph("multiple words"))
                 .build());
     }
 
@@ -65,7 +56,7 @@ public class TweetPhraseMatcherBoltTest {
     }
 
     private Map<TweetPhrase, Integer> sharedTermsCountPerPhrase() {
-        return ImmutableMap.<TweetPhrase, Integer>builder().put(ph("OneWord"), 1).put(ph("Multiple Words"), 2).build();
+        return ImmutableMap.<TweetPhrase, Integer>builder().put(ph("oneword"), 1).put(ph("multiple words"), 2).build();
     }
 
     private TrackPhrases sharedTrackPhrases() {
@@ -73,6 +64,6 @@ public class TweetPhraseMatcherBoltTest {
     }
 
     private TwitterStreamParams singlePhraseParams(String phrase) {
-        return new TwitterStreamParams(Collections.singletonList(ph(phrase)), Collections.emptyList());
+        return new TwitterStreamParams(Collections.singletonList(ph(phrase)), Collections.singletonList("en"));
     }
 }

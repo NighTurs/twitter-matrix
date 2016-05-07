@@ -90,7 +90,7 @@ class TweetPhraseMatcherBolt extends BaseBasicBolt {
 
         for (TweetPhrase phrase : params.getTrackPhrases()) {
             List<String> terms = Splitter.on(" ")
-                    .splitToList(phrase.getPhrase().toLowerCase(Locale.ROOT))
+                    .splitToList(phrase.getPhrase())
                     .stream()
                     .filter(x -> !x.isEmpty())
                     .collect(Collectors.toList());
