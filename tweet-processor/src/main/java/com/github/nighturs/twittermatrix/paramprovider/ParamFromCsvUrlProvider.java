@@ -43,11 +43,20 @@ public final class ParamFromCsvUrlProvider {
             try (BufferedReader in = new BufferedReader(new InputStreamReader(csvUrl.openStream()))) {
                 String inputLine;
                 while ((inputLine = in.readLine()) != null) {
-                    phrases.add(TweetPhrase.create(inputLine));
+                    if (TweetPhrase.isValidPhrase(inputLine)) {
+                        phrases.add(TweetPhrase.create(inputLine));
+                    } else {
+                        logger.error("Skip update. Invalid track phrase in csv, Phrase={}", inputLine);
+                        return;
+                    }
                 }
                 logger.info("Got phrases, Phrases={}", phrases);
             }
             if (curPhrases.get() == null || !curPhrases.get().equals(phrases)) {
+                if (!TwitterStreamParams.isValidTrackPhrases(phrases)) {
+                    logger.error("Skip update. Invalid track phrases, Phrases={}", phrases);
+                    return;
+                }
                 TwitterStreamParams streamParams = new TwitterStreamParams(phrases, Lists.newArrayList("en", "ru"));
                 ParamProviderUtils.publishParams(rabbitMqConfig, streamParams);
                 curPhrases.set(phrases);
