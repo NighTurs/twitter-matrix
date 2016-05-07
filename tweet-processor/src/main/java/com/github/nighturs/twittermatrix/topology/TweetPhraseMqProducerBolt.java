@@ -75,8 +75,7 @@ class TweetPhraseMqProducerBolt extends BaseBasicBolt {
                     json.getBytes(Charsets.UTF_8));
             logger.info("Published tweet phrase, TweetPhrases={}", tweetPhrases);
         } catch (IOException e) {
-            throw new RuntimeException(String.format("Failed to publish tweetPhrase, TweetPhrases=%s", tweetPhrases),
-                    e);
+            logger.error("Failed to publish tweetPhrase, TweetPhrases={}", tweetPhrases, e);
         }
     }
 

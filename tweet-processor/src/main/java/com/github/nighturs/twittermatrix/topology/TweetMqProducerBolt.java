@@ -71,7 +71,7 @@ class TweetMqProducerBolt extends BaseBasicBolt {
             mqChannel.basicPublish(mqConfig.rabbitMqTwitterTweetExchange(), "", null, json.getBytes(Charsets.UTF_8));
             logger.info("Published tweet, Tweet={}", tweet);
         } catch (IOException e) {
-            throw new RuntimeException(String.format("Failed to publish tweet, Tweet=%s", tweet), e);
+            logger.error("Failed to publish tweet, Tweet={}", tweet, e);
         }
     }
 
