@@ -12,6 +12,10 @@ public final class TweetPhrase {
     private final String phrase;
     private final TweetPhraseStats stats;
 
+    public String id() {
+        return phrase;
+    }
+
     public static TweetPhrase create(String phrase) {
         return new TweetPhrase(phrase, null);
     }

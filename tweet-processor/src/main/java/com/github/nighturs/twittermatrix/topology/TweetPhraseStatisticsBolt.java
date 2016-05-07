@@ -19,7 +19,8 @@ import static com.github.nighturs.twittermatrix.topology.TweetProcessorTopology.
 import static com.github.nighturs.twittermatrix.topology.TweetProcessorTopology.TWEET_PHRASES_FIELD;
 
 class TweetPhraseStatisticsBolt extends BaseBasicBolt {
-    private final Map<TweetPhrase, LinkedList<Instant>> matchesByPhrase = new HashMap<>();
+    private final Map<String, Integer> matchesByPhrase = new HashMap<>();
+    private final Deque<Map.Entry<String, Instant>> matchesWindow = new ArrayDeque<>();
     Clock systemClock = Clock.systemDefaultZone();
 
     @SuppressWarnings("unchecked")
@@ -40,31 +41,35 @@ class TweetPhraseStatisticsBolt extends BaseBasicBolt {
     void updateMatchedPhrases(Tweet tweet) {
         Instant now = Instant.now(systemClock);
         for (TweetPhrase phrase : tweet.getMatchedPhrases()) {
-            if (!matchesByPhrase.containsKey(phrase)) {
-                matchesByPhrase.put(phrase, new LinkedList<>());
-            }
-            LinkedList<Instant> matches = matchesByPhrase.get(phrase);
-            removeOldData(matches);
-            matches.add(now);
+            removeOldData();
+            Integer currentMatches = matchesByPhrase.get(phrase.id());
+            matchesByPhrase.put(phrase.id(), currentMatches == null ? 1 : currentMatches + 1);
+            matchesWindow.addLast(new HashMap.SimpleEntry<>(phrase.id(), now));
         }
     }
 
     List<TweetPhrase> enrichWithStats(List<TweetPhrase> tweetPhrases) {
-        tweetPhrases.stream().map(matchesByPhrase::get).filter(x -> x != null).forEach(this::removeOldData);
+        removeOldData();
         return tweetPhrases.stream().map(x -> {
-            LinkedList<Instant> matches = matchesByPhrase.get(x);
+            Integer matches = matchesByPhrase.get(x.id());
             if (matches == null) {
                 return x.withStats(new TweetPhraseStats(0));
             } else {
-                return x.withStats(new TweetPhraseStats(matches.size()));
+                return x.withStats(new TweetPhraseStats(matches));
             }
         }).collect(Collectors.toList());
     }
 
-    private void removeOldData(LinkedList<Instant> instants) {
+    private void removeOldData() {
         Instant minuteAgo = Instant.now(systemClock).minus(Duration.ofMinutes(1));
-        while (!instants.isEmpty() && instants.getFirst().isBefore(minuteAgo)) {
-            instants.removeFirst();
+        while (!matchesWindow.isEmpty() && matchesWindow.peekFirst().getValue().isBefore(minuteAgo)) {
+            Map.Entry<String, Instant> entry = matchesWindow.pollFirst();
+            Integer leftMatches = matchesByPhrase.get(entry.getKey()) - 1;
+            if (leftMatches == 0) {
+                matchesByPhrase.remove(entry.getKey());
+            } else {
+                matchesByPhrase.put(entry.getKey(), leftMatches);
+            }
         }
     }
 

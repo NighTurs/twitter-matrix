@@ -15,7 +15,7 @@ import static org.hamcrest.Matchers.iterableWithSize;
 public class TweetPhraseStatisticsBoltTest {
 
     @Test
-    public void updateMatchedPhrases() throws Exception {
+    public void testUpdateMatchedPhrases() throws Exception {
         TweetPhraseStatisticsBolt bolt = new TweetPhraseStatisticsBolt();
         bolt.systemClock = fixedClock(9, 30);
         TweetPhrase ph1 = ph("Phrase one");
