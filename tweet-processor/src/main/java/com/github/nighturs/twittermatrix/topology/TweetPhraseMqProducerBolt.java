@@ -8,6 +8,7 @@ import backtype.storm.tuple.Tuple;
 import com.github.nighturs.twittermatrix.RabbitMqUtil;
 import com.github.nighturs.twittermatrix.config.RabbitMqConfig;
 import com.github.nighturs.twittermatrix.domain.TweetPhrase;
+import com.github.nighturs.twittermatrix.domain.TweetPhraseStats;
 import com.google.common.base.Charsets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 import static com.github.nighturs.twittermatrix.topology.TweetProcessorTopology.TWEET_PHRASES_FIELD;
 
@@ -67,7 +69,9 @@ class TweetPhraseMqProducerBolt extends BaseBasicBolt {
     public void execute(Tuple input, BasicOutputCollector collector) {
         @SuppressWarnings("unchecked")
         List<TweetPhrase> tweetPhrases = (List<TweetPhrase>) input.getValueByField(TWEET_PHRASES_FIELD);
-        String json = gson.toJson(new TweetPhrasesView(tweetPhrases));
+        String json = gson.toJson(new TweetPhrasesView(tweetPhrases.stream()
+                .map(TweetPhraseView::of)
+                .collect(Collectors.toList())));
         try {
             mqChannel.basicPublish(mqConfig.rabbitMqTwitterTweetPhrasesExchange(),
                     "",
@@ -87,6 +91,19 @@ class TweetPhraseMqProducerBolt extends BaseBasicBolt {
     private static class TweetPhrasesView {
 
         @NonNull
-        private final List<TweetPhrase> phrases;
+        private final List<TweetPhraseView> phrases;
+    }
+
+    @Data
+    private static class TweetPhraseView {
+        @NonNull
+        private final String phrase;
+        @NonNull
+        private final String id;
+        private final TweetPhraseStats stats;
+
+        static TweetPhraseView of(TweetPhrase tweetPhrase) {
+            return new TweetPhraseView(tweetPhrase.getPhrase(), tweetPhrase.id(), tweetPhrase.getStats());
+        }
     }
 }

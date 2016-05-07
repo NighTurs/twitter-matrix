@@ -30,8 +30,10 @@
             rollers: [],
             // Tweet phrases by id
             phrases: new Map(),
-            // Set of phrases to filter out
+            // Set of phrase id's to filter out
             filterPhrases: new Set(),
+            // WebSocket tweet subscriptions by phrase id
+            wsSubByPhrase: new Map(),
             pendingTweets: []
         };
 
@@ -154,7 +156,7 @@
         function filterTweet(tweet) {
             var filter = true;
             tweet.phrases.forEach(function (entry) {
-                filter &= st.filterPhrases.has(entry);
+                filter &= st.filterPhrases.has(entry.id);
             });
             return filter;
         }
@@ -264,20 +266,56 @@
             }
         }
 
-        function phraseId(phrase) {
-            return "cb_" + phrase.replace(new RegExp(' ', 'g'), '_');
-        }
-
         $(document).on('change', '[type=checkbox]', function (e) {
             var cb = $(e.target);
             var label = $(e.target).parent();
-            var phrase = st.phrases.get(label.attr('id')).phrase;
+            var phrase = st.phrases.get(label.attr('id').substring(3));
             if (!cb.is(':checked')) {
-                st.filterPhrases.add(phrase);
+                hidePhrase(phrase);
             } else {
-                st.filterPhrases.delete(phrase);
+                showPhrase(phrase);
             }
         });
+
+        function showPhrase(phrase) {
+            st.filterPhrases.delete(phrase.id);
+            subscribeToPhrase(phrase);
+        }
+
+        function hidePhrase(phrase) {
+            st.filterPhrases.add(phrase.id);
+            unsubscribeFromPhrase(phrase);
+        }
+
+        function subscribeToPhrase(phrase) {
+            if (st.wsSubByPhrase.has(phrase.id)) {
+                // already subscribed
+                return;
+            }
+            st.wsSubByPhrase.set(phrase.id, client.subscribe("/exchange/twitter.tweet/" + phrase.id,
+                function (message) {
+                    var tweet = JSON.parse(message.body);
+                    if (!filterTweet(tweet)) {
+                        // as same message may show up through multiple subscriptions
+                        // we should ensure that it will be processed only once
+                        var firstNonFilteredPhrase = tweet.phrases.filter(function(x) {
+                            return !st.filterPhrases.has(x.id);
+                        })[0];
+                        if (message.headers.destination.split("/").pop() == firstNonFilteredPhrase.id) {
+                            st.pendingTweets.push(tweet);
+                        }
+                    }
+                },
+                {priority: 9}
+            ));
+        }
+
+        function unsubscribeFromPhrase(phrase) {
+            if (st.wsSubByPhrase.has(phrase.id)) {
+                st.wsSubByPhrase.get(phrase.id).unsubscribe();
+                st.wsSubByPhrase.delete(phrase.id);
+            }
+        }
 
         $(window).resize(function () {
             adjustToNewWindowSize()
@@ -287,44 +325,42 @@
         client.debug = null;
 
         client.connect('guest', 'guest', function () {
-            client.subscribe("/exchange/twitter.tweet",
-                function (message) {
-                    var tweet = JSON.parse(message.body);
-                    if (!filterTweet(tweet)) {
-                        st.pendingTweets.push(tweet);
-                    }
-                },
-                {priority: 9}
-            );
             client.subscribe("/exchange/twitter.tweet.phrases",
                 function (message) {
                     var msg = JSON.parse(message.body);
                     var curPhrases = new Map();
+                    var toCheckBoxId = function(phraseId) {
+                        return 'cb_' + phraseId;
+                    };
+
                     msg.phrases.forEach(function (entry) {
-                        var key = phraseId(entry.phrase);
-                        curPhrases.set(key, {
+                        curPhrases.set(entry.id, {
+                            id: entry.id,
                             phrase: entry.phrase,
                             freqMinute: entry.stats.freqMinute
                         });
                     });
                     // remove phrases that disappeared
-                    st.phrases.forEach(function (value, key) {
-                        if (!curPhrases.has(key)) {
-                            $('#' + key).remove();
-                            st.filterPhrases.delete(value);
+                    st.phrases.forEach(function (phrase, phraseId) {
+                        if (!curPhrases.has(phraseId)) {
+                            $('#' + toCheckBoxId(phraseId)).remove();
+                            hidePhrase(phrase);
                         }
                     });
                     // and new phrases and update existing
-                    curPhrases.forEach(function (value, key) {
-                        var phraseSelector = '#' + key;
+                    curPhrases.forEach(function (phrase, phraseId) {
+                        var phraseSelector = '#' + toCheckBoxId(phraseId);
                         if ($(phraseSelector).length) {
                             $(phraseSelector).contents().filter(function () {
                                     return this.nodeType == 3;
                                 })
-                                .last().replaceWith(value.freqMinute + ' ' + value.phrase);
+                                .last().replaceWith(phrase.freqMinute + ' ' + phrase.phrase);
                         } else {
-                            $("#phrases").append('<label id="' + key + '" class="btn btn-switch active"> \
-                        <input type="checkbox" checked> ' + value.freqMinute + ' ' + value.phrase + '</label>')
+                            $("#phrases").append('<label id="' + toCheckBoxId(phraseId) +
+                                '" class="btn btn-switch active"> \
+                                 <input type="checkbox" checked> ' +
+                                phrase.freqMinute + ' ' + phrase.phrase + '</label>');
+                            showPhrase(phrase);
                         }
                     });
                     st.phrases = curPhrases;

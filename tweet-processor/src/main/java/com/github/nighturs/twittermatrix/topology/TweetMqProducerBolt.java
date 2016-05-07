@@ -46,7 +46,7 @@ class TweetMqProducerBolt extends BaseBasicBolt {
         try {
             mqConn = factory.newConnection();
             mqChannel = mqConn.createChannel();
-            mqChannel.exchangeDeclare(mqConfig.rabbitMqTwitterTweetExchange(), "fanout");
+            mqChannel.exchangeDeclare(mqConfig.rabbitMqTwitterTweetExchange(), "direct");
         } catch (TimeoutException | IOException e) {
             throw new RuntimeException("Error while establishing queue connection", e);
         }
@@ -68,7 +68,12 @@ class TweetMqProducerBolt extends BaseBasicBolt {
         Tweet tweet = (Tweet) input.getValueByField(TweetProcessorTopology.TWEET_FIELD);
         String json = gson.toJson(TweetView.of(tweet));
         try {
-            mqChannel.basicPublish(mqConfig.rabbitMqTwitterTweetExchange(), "", null, json.getBytes(Charsets.UTF_8));
+            for (TweetPhrase phrase : tweet.getMatchedPhrases()) {
+                mqChannel.basicPublish(mqConfig.rabbitMqTwitterTweetExchange(),
+                        phrase.id(),
+                        null,
+                        json.getBytes(Charsets.UTF_8));
+            }
             logger.info("Published tweet, Tweet={}", tweet);
         } catch (IOException e) {
             logger.error("Failed to publish tweet, Tweet={}", tweet, e);
@@ -89,13 +94,25 @@ class TweetMqProducerBolt extends BaseBasicBolt {
         @NonNull
         private final String text;
         @NonNull
-        private final List<String> phrases;
+        private final List<TweetPhraseView> phrases;
 
         private static TweetView of(Tweet tweet) {
             return new TweetView(tweet.getId(),
                     tweet.getUrl(),
                     tweet.getText(),
-                    tweet.getMatchedPhrases().stream().map(TweetPhrase::getPhrase).collect(Collectors.toList()));
+                    tweet.getMatchedPhrases().stream().map(TweetPhraseView::of).collect(Collectors.toList()));
+        }
+
+        @Data
+        private static class TweetPhraseView {
+            @NonNull
+            private final String phrase;
+            @NonNull
+            private final String id;
+
+            static TweetPhraseView of(TweetPhrase tweetPhrase) {
+                return new TweetPhraseView(tweetPhrase.getPhrase(), tweetPhrase.id());
+            }
         }
     }
 
