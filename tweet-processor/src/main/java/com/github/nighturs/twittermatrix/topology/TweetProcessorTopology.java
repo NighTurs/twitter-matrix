@@ -23,6 +23,7 @@ final class TweetProcessorTopology {
     private static final String JMS_TWEET_PHRASES_TOPIC_BOLT = "JMS_TWEET_PHRASES_TOPIC_BOLT";
     private static final String UNMATCHED_TWEET_FILTER_BOLT = "UNMATCHED_TWEET_FILTER_BOLT";
     private static final String RETWEET_FILTER_BOLT = "RETWEET_FILTER_BOLT";
+    private static final String TWEET_CLEANING_BOLT = "TWEET_CLEANING_BOLT";
     static final String TWEET_FIELD = "tweet";
     static final String TWEET_PHRASES_FIELD = "tweetPhrases";
 
@@ -41,8 +42,8 @@ final class TweetProcessorTopology {
                 .shuffleGrouping(RETWEET_FILTER_BOLT);
         builder.setBolt(UNMATCHED_TWEET_FILTER_BOLT, new UnmatchedTweetFilterBolt())
                 .shuffleGrouping(TWEET_PHRASE_MATCHER_BOLT);
-        builder.setBolt(TWEET_MQ_PRODUCER_BOLT, new TweetMqProducerBolt(mqConfig))
-                .shuffleGrouping(UNMATCHED_TWEET_FILTER_BOLT);
+        builder.setBolt(TWEET_CLEANING_BOLT, new TweetCleaningBolt()).shuffleGrouping(UNMATCHED_TWEET_FILTER_BOLT);
+        builder.setBolt(TWEET_MQ_PRODUCER_BOLT, new TweetMqProducerBolt(mqConfig)).shuffleGrouping(TWEET_CLEANING_BOLT);
 
         builder.setSpout(TWEET_PHRASE_SPOUT, new TweetPhraseSpout());
         builder.setBolt(TWEET_PHRASE_STATISTICS_BOLT, new TweetPhraseStatisticsBolt())

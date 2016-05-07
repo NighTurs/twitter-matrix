@@ -22,6 +22,7 @@ dependencies {
     compile group: 'org.aeonbits.owner', name: 'owner', version: '1.0.8'
     compile group: 'com.google.code.gson', name: 'gson', version: '2.6.2'
     compile group: 'org.projectlombok', name: 'lombok', version: '1.16.8'
+    compile group: 'com.vdurmont', name: 'emoji-java', version: '3.1.1'
 }
 
 task topologyRun(type: JavaExec) {
